@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<main class="wrap" id="content"></main>
+<footer class="wrap">Hosted on GitHub Pages • Add to Home Screen on iPhone for an app-like feel ✨</footer>
+<script>
+// ---------- 1) Your games list (add/modify items here) ----------
+const GAMES = [
+{
+title: "Vocabulary — Bubble Pop (Drag & Tap)",
+subject: "Language Arts",
+week: "Week 1",
+series: "Vocab Set A",
+date: "2025-09-01",
+path: "games/vocab_week1.html",
+notes: "15 words: extinguish, virtue, radiant… adds time + cheering + rounds."
+}
+];
+
+
+// ---------- 2) Rendering & filtering ----------
+const $ = s => document.querySelector(s);
+const content = $("#content"), q=$("#q"), subject=$("#subject"), scope=$("#scope"), clearBtn=$("#clear");
+(function initFilters(){
+const subjects = Array.from(new Set(GAMES.map(g=>g.subject))).sort();
+subjects.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; subject.appendChild(o); });
+const scopes = Array.from(new Set(GAMES.flatMap(g=>[g.week, g.series]).filter(Boolean))).sort();
+scopes.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; scope.appendChild(o); });
+const saved = JSON.parse(localStorage.getItem('filters')||'{}');
+if(saved.q) q.value = saved.q; if(saved.subject) subject.value = saved.subject; if(saved.scope) scope.value = saved.scope;
+})();
+function saveFilters(){ localStorage.setItem('filters', JSON.stringify({q:q.value, subject:subject.value, scope:scope.value})); }
+function matches(g){
+const text = (g.title+" "+(g.notes||"")+" "+g.subject+" "+g.week+" "+(g.series||"")).toLowerCase();
+const qok = !q.value || text.includes(q.value.toLowerCase());
+const sok = !subject.value || g.subject===subject.value;
+const gok = !scope.value || [g.week, g.series].filter(Boolean).includes(scope.value);
+return qok && sok && gok;
+}
+function groupKey(g){ return scope.value && (g.week===scope.value || g.series===scope.value) ? scope.value : (g.week||'Other'); }
+function card(g){
+const el=document.createElement('div'); el.className='card';
+el.innerHTML = `
+<div class="title">${g.title}</div>
+<div class="meta">
+<span class="badge subj">${g.subject}</span>
+${g.week?`<span class="badge week">${g.week}</span>`:''}
+${g.series?`<span class="badge series">${g.series}</span>`:''}
+</div>
+<div class="desc">${g.notes||''}</div>
+<div class="row">
+<a class="play" href="${g.path}" target="_blank" rel="noopener">▶ Play</a>
+<div class="muted">${g.date? new Date(g.date).toLocaleDateString():''}</div>
+</div>`;
+return el;
+}
+function render(){
+saveFilters(); content.innerHTML='';
+const filtered = GAMES.filter(matches).sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+if(filtered.length===0){ const d=document.createElement('div'); d.style.cssText='padding:24px;text-align:center;color:#6b7280;'; d.textContent='No games match your filters yet.'; content.appendChild(d); return; }
+const groups={}; filtered.forEach(g=>{ (groups[groupKey(g)] ||= []).push(g); });
+Object.keys(groups).sort().forEach(k=>{
+const h=document.createElement('div'); h.className='group'; h.textContent=k; content.appendChild(h);
+const grid=document.createElement('div'); grid.className='grid';
+groups[k].forEach(g=>grid.appendChild(card(g))); content.appendChild(grid);
+});
+}
+[q,subject,scope].forEach(e=>e.addEventListener('input', render));
+$('#clear').addEventListener('click', ()=>{ q.value=''; subject.value=''; scope.value=''; render(); });
+render();
+</script>
+</body>
+</html>
