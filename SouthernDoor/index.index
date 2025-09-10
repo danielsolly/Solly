@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Southern Door Investments</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f8fafc; color:#0f172a; }
+    header { padding:1rem; background:#fff; border-bottom:1px solid #ddd; display:flex; align-items:center; justify-content:space-between; }
+    header img { height:40px; }
+    .container { max-width:960px; margin:2rem auto; padding:1rem; }
+    h1 { color:#b91c1c; }
+    .card { background:#fff; padding:1rem; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:2rem; }
+  </style>
+  <!-- HubSpot tracking -->
+  <script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/243622082.js"></script>
+</head>
+<body>
+  <header>
+    <img src="assets/logo.svg" alt="Southern Door Investments">
+    <nav><a href="#seller">Sell</a> | <a href="#buyers">Buy</a> | <a href="#contact">Contact</a></nav>
+  </header>
+  <main class="container">
+    <section id="hero">
+      <h1>Real Estate Investing, Simplified</h1>
+      <p>We help landlords and investors sell or buy 10–30+ homes or individual homes in a single, low-friction process.</p>
+    </section>
+
+    <section id="seller" class="card">
+      <h2>Seller Intake</h2>
+      <script src="https://js-na2.hsforms.net/forms/embed/243622082.js" defer></script>
+      <div class="hs-form-frame" data-region="na2" data-form-id="e32d2a85-1afa-4e75-8646-4ce8609dc344" data-portal-id="243622082"></div>
+    </section>
+
+    <section id="buyers" class="card">
+      <h2>Buyer Intake</h2>
+      <script src="https://js-na2.hsforms.net/forms/embed/243622082.js" defer></script>
+      <div class="hs-form-frame" data-region="na2" data-form-id="2defd4b1-0e90-4bab-b721-cd9334dc8cc5" data-portal-id="243622082"></div>
+    </section>
+
+    <section id="contact" class="card">
+      <h2>Contact</h2>
+      <p>Email: deals@southerndoorinvestments.com<br>Phone: (404) 384-9197</p>
+    </section>
+  </main>
+</body>
+</html>
