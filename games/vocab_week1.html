@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Addison’s Bubble Vocab — Drag & Tap</title>
+<style>
+  :root{ --bg:#f6f4ff; --card:#ffffff; --accent:#7c3aed; --accent-3:#06b6d4; --ink:#1f2937; }
+  html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    background: radial-gradient(1200px 1200px at 80% -10%, #dbeafe 0%, transparent 60%),
+               radial-gradient(900px 900px at 10% 110%, #ede9fe 0%, transparent 60%), var(--bg);
+    color:var(--ink); overflow:hidden; -webkit-user-select:none; user-select:none; }
+  .hud{ position:fixed; inset:12px 12px auto 12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; z-index:5; }
+  .pill{ background:#fff; border-radius:999px; padding:8px 12px; box-shadow:0 4px 14px rgba(0,0,0,.08); font-weight:600; display:flex; align-items:center; gap:6px; }
+  .btn{ cursor:pointer; border:none; border-radius:999px; padding:10px 14px; font-weight:700; background:var(--accent); color:#fff; box-shadow:0 6px 16px rgba(124,58,237,.35); }
+  .btn.secondary{ background:#111827; color:#fff; }
+  .btn.ghost{ background:#fff; color:#111827; box-shadow:0 6px 16px rgba(0,0,0,.1); }
+  .progress{ height:10px; width:220px; background:#e5e7eb; border-radius:999px; overflow:hidden; }
+  .progress>span{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent-3)); transition:width .3s ease; }
+
+  .arena{ position:relative; width:100vw; height:100vh; overflow:hidden; }
+  .definition-card{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(760px,88vw);
+    background:var(--card); border-radius:20px; padding:22px 20px; text-align:center;
+    box-shadow:0 12px 32px rgba(0,0,0,.15), inset 0 0 0 2px rgba(124,58,237,.08); z-index:3; /* above bubbles */
+  }
+  .definition-card h2{ margin:0 0 8px; font-size:18px; letter-spacing:.04em; text-transform:uppercase; color:#6b7280; }
+  .definition{ font-size: clamp(18px, 3.2vw, 26px); font-style: italic; line-height:1.35; }
+  .muted{ color:#6b7280; font-size:13px; margin-top:10px; }
+  .big-score, .round-badge{ position:absolute; top:16px; font-weight:800; font-size:18px; opacity:.7; }
+  .big-score{ right:16px; } .round-badge{ left:16px; }
+
+  .bubble{
+    position:absolute; display:flex; align-items:center; justify-content:center; padding:14px 18px;
+    background:radial-gradient(120% 120% at 30% 30%, rgba(255,255,255,.9) 0%, rgba(255,255,255,.75) 45%, rgba(255,255,255,.65) 60%, rgba(255,255,255,.55) 100%),
+               linear-gradient(180deg, rgba(124,58,237,.18), rgba(6,182,212,.18));
+    border-radius:999px; box-shadow: inset 0 0 16px rgba(255,255,255,.7), 0 10px 26px rgba(0,0,0,.15);
+    border:2px solid rgba(255,255,255,.7);
+    transform:translate(-50%,-50%) scale(1); transition: transform .12s ease; animation: float var(--dur,12s) ease-in-out infinite;
+    cursor:pointer; z-index:1; touch-action:none; /* enables smooth drag on iOS */
+  }
+  .bubble:hover{ transform:translate(-50%,-50%) scale(1.06); }
+  .bubble span{ font-weight:800; white-space:nowrap; font-size: clamp(14px, 2.2vw, 20px); color:#0f172a; text-shadow: 0 1px 0 rgba(255,255,255,.7); }
+  @keyframes float{ 0%{ transform:translate(-50%,-50%) translateY(0) scale(1); } 50%{ transform:translate(-50%,-50%) translateY(-20px) scale(1.04);} 100%{ transform:translate(-50%,-50%) translateY(0) scale(1); } }
+  .pop{ animation: pop .25s ease forwards; }
+  @keyframes pop{ 0%{ transform:translate(-50%,-50%) scale(1); opacity:1;}
+                  60%{ transform:translate(-50%,-50%) scale(1.2); opacity:1;}
+                  100%{ transform:translate(-50%,-50%) scale(0.15); opacity:0;} }
+  .confetti{ position:absolute; width:6px; height:12px; border-radius:2px; opacity:.95; pointer-events:none; z-index:2; }
+  .controls{ position:fixed; left:0; right:0; bottom:0; display:flex; gap:10px; padding:12px; justify-content:center; flex-wrap:wrap; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(15,23,42,.68); display:flex; align-items:center; justify-content:center; z-index:10; }
+  .overlay .panel{ background:#fff; padding:24px; border-radius:16px; max-width:520px; text-align:center; box-shadow:0 16px 40px rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+  <div class="hud">
+    <div class="pill">🧭 Round: <span id="round">1</span>/3</div>
+    <div class="pill">⭐ Streak: <span id="streak">0</span></div>
+    <div class="pill">✅ Correct: <span id="correct">0</span></div>
+    <div class="pill">⏱️ Time: <span id="time">60</span>s</div>
+    <div class="pill progress" title="Progress"><span id="bar"></span></div>
+    <button class="btn ghost" id="speakBtn" title="Read definition aloud">🔊 Read</button>
+    <button class="btn secondary" id="resetBtn">New Game</button>
+  </div>
+
+  <div class="arena" id="arena">
+    <div class="definition-card" id="card">
+      <div class="round-badge" id="roundBadge">Round 1</div>
+      <div class="big-score" id="bigScore">0 / 15</div>
+      <h2>Pop the correct word</h2>
+      <div class="definition" id="definition">Loading…</div>
+      <div class="muted">Tap to pop. Press & hold to drag bubbles apart.</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="nextBtn">Next Definition ▶</button>
+  </div>
+
+  <div class="overlay" id="startOverlay" aria-modal="true" role="dialog">
+    <div class="panel">
+      <h1>Addison’s Bubble Vocab</h1>
+      <p>Tap Start Game to begin (unlocks sound on iPhone). If you opened this from Mail, save to Files and open in Safari.</p>
+      <button class="btn" id="startBtn">Start Game</button>
+    </div>
+  </div>
+
+<script>
+/* -------- DATA -------- */
+const VOCAB = [
+  {word:"extinguish", def:"put out, as of fires, flames, or lights"},
+  {word:"void", def:"an empty area or space"},
+  {word:"inexorable", def:"impossible to prevent, resist, or stop"},
+  {word:"radiant", def:"emanating or as if emanating light"},
+  {word:"apprehension", def:"fearful expectation or anticipation"},
+  {word:"resonant", def:"characterized by a loud deep sound"},
+  {word:"obscure", def:"make unclear, indistinct, or blurred"},
+  {word:"disperse", def:"cause to separate"},
+  {word:"incapable", def:"lacking ability"},
+  {word:"perturbed", def:"thrown into a state of agitated confusion"},
+  {word:"comprehend", def:"get the meaning of something"},
+  {word:"malignant", def:"showing malicious ill will and a desire to hurt"},
+  {word:"abruptly", def:"quickly and without warning"},
+  {word:"ephemeral", def:"anything short-lived, as an insect that lives only for a day"},
+  {word:"virtue", def:"the quality of doing what is right"}
+];
+
+/* -------- CONFIG -------- */
+const ROUNDS = 3;
+const WORDS_PER_ROUND = Math.ceil(VOCAB.length / ROUNDS);
+const ROUND_TIME = [60, 45, 30];
+const TIME_BONUS = 4;
+const TIME_CAP   = 120;
+
+/* -------- UTIL -------- */
+const rand = (min,max)=>Math.random()*(max-min)+min;
+const shuffle = arr => [...arr].sort(()=>Math.random()-0.5);
+const clamp = (n,min,max)=>Math.max(min, Math.min(max,n));
+
+/* -------- AUDIO -------- */
+let audioCtx=null;
+function ensureAudio(){
+  try{
+    if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+  }catch(e){}
+}
+function blip(freq=540, dur=0.08, type='sine', gain=0.08){
+  if(!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g).connect(audioCtx.destination);
+  o.start(); setTimeout(()=>{ try{o.stop();}catch(e){} }, dur*1000);
+}
+function popSound(){
+  if(!audioCtx) return;
+  const now=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='triangle'; o.frequency.setValueAtTime(220, now); o.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+  g.gain.setValueAtTime(0.2, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  o.connect(g).connect(audioCtx.destination); o.start(now); o.stop(now + 0.12);
+}
+function cheerSound(){
+  if(!audioCtx) return;
+  const ctx = audioCtx;
+  const bufferSize = 2 * ctx.sampleRate;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1 + Math.random()*2-1 + Math.random()*2-1)/3 * 0.4;
+  const noise = ctx.createBufferSource(); noise.buffer = noiseBuffer;
+  const filt = ctx.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=800; filt.Q.value=0.7;
+  const g = ctx.createGain(); g.gain.value = 0.2;
+  noise.connect(filt).connect(g).connect(ctx.destination);
+  noise.start(); noise.stop(ctx.currentTime + 0.45);
+
+  const o1=ctx.createOscillator(), g1=ctx.createGain();
+  o1.type='sine'; o1.frequency.setValueAtTime(660, ctx.currentTime);
+  o1.frequency.exponentialRampToValueAtTime(990, ctx.currentTime + 0.15);
+  g1.gain.setValueAtTime(0.0, ctx.currentTime);
+  g1.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 0.05);
+  g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+  o1.connect(g1).connect(ctx.destination); o1.start(); o1.stop(ctx.currentTime + 0.26);
+
+  const o2=ctx.createOscillator(), g2=ctx.createGain();
+  o2.type='square'; o2.frequency.setValueAtTime(440, ctx.currentTime + 0.12);
+  o2.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.32);
+  g2.gain.setValueAtTime(0.0, ctx.currentTime + 0.12);
+  g2.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.16);
+  g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.36);
+  o2.connect(g2).connect(ctx.destination); o2.start(ctx.currentTime + 0.12); o2.stop(ctx.currentTime + 0.38);
+}
+
+/* -------- SPEECH -------- */
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate=1; u.pitch=1; u.lang="en-US";
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* -------- DOM -------- */
+const arena = document.getElementById('arena');
+const card  = document.getElementById('card');
+const defEl = document.getElementById('definition');
+const bigScore = document.getElementById('bigScore');
+const nextBtn = document.getElementById('nextBtn');
+const resetBtn= document.getElementById('resetBtn');
+const speakBtn= document.getElementById('speakBtn');
+const timeEl   = document.getElementById('time');
+const streakEl = document.getElementById('streak');
+const correctEl= document.getElementById('correct');
+const barEl    = document.getElementById('bar');
+const roundEl  = document.getElementById('round');
+const roundBadge=document.getElementById('roundBadge');
+const startOverlay=document.getElementById('startOverlay');
+const startBtn = document.getElementById('startBtn');
+
+/* -------- STATE -------- */
+let deck=[], roundIndex=0, roundSlice=[], current=null;
+let correctTotal=0, streak=0, timer=60, timerId=null, roundActive=false, gameStarted=false;
+
+/* -------- POSITIONS (avoid center card) -------- */
+function randomBubblePositionAvoidCard(){
+  const {width:w, height:h} = arena.getBoundingClientRect();
+  const cRect = card.getBoundingClientRect();
+  const aRect = arena.getBoundingClientRect();
+  const margin = 30;
+  const exLeft   = cRect.left - aRect.left - margin;
+  const exTop    = cRect.top  - aRect.top  - margin;
+  const exRight  = exLeft + cRect.width + margin*2;
+  const exBottom = exTop  + cRect.height + margin*2;
+
+  for(let tries=0; tries<60; tries++){
+    const cx = w/2, cy = h/2;
+    const radius = Math.min(w,h)/2.6;
+    const angle = rand(0, Math.PI*2);
+    const rJitter = rand(-radius*0.25, radius*0.25);
+    let x = cx + (radius + rJitter) * Math.cos(angle);
+    let y = cy + (radius + rJitter) * Math.sin(angle);
+    x = clamp(x, 70, w-70); y = clamp(y, 70, h-70);
+    if(x >= exLeft && x <= exRight && y >= exTop && y <= exBottom) continue;
+    return {x, y};
+  }
+  return { x: rand(80, w-80), y: rand(80, h-80) };
+}
+
+/* -------- CONFETTI -------- */
+function confettiBurst(x, y, count=24){
+  const colors = ['#7c3aed','#22c55e','#06b6d4','#f59e0b','#ef4444','#3b82f6','#10b981'];
+  for(let i=0;i<count;i++){
+    const c = document.createElement('div');
+    c.className='confetti'; c.style.left = (x-3)+'px'; c.style.top  = (y-6)+'px';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    arena.appendChild(c);
+    const dx = rand(-160,160), dy = rand(-220, -60);
+    c.animate([{ transform:`translate(0,0)`, opacity:1 },
+               { transform:`translate(${dx}px, ${dy}px)`, opacity:0 }],
+               { duration: 650 + Math.random()*500, easing: 'cubic-bezier(.15,.85,.35,1)' })
+     .onfinish = ()=> c.remove();
+  }
+}
+
+/* -------- DRAG / TAP SETTINGS -------- */
+const HOLD_MS = 150;     // press & hold threshold to start drag
+const MOVE_PX = 5;       // movement to consider as drag (px)
+
+/* Limit bubble to arena bounds */
+function boundToArena(x, y){
+  const r = arena.getBoundingClientRect();
+  const pad = 40; // keep fully visible
+  return {
+    x: clamp(x, pad, r.width - pad),
+    y: clamp(y, pad, r.height - pad)
+  };
+}
+
+/* -------- BUBBLES -------- */
+function makeBubble(text, isCorrect=false){
+  const b = document.createElement('div');
+  b.className='bubble';
+  const {x,y} = randomBubblePositionAvoidCard();
+  b.style.left = x+'px'; b.style.top  = y+'px';
+  b.style.setProperty('--dur', `${rand(9,14)}s`);
+  b.innerHTML = `<span>${text}</span>`;
+
+  // Drag / Tap logic
+  let pointerId = null, startTime = 0, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+  let dragging = false;
+
+  const onPointerDown = (e) => {
+    if(!roundActive) return;
+    ensureAudio();
+    pointerId = e.pointerId || 'touch';
+    b.setPointerCapture?.(pointerId);
+    startTime = Date.now();
+    startX = e.clientX; startY = e.clientY;
+    startLeft = parseFloat(b.style.left); startTop = parseFloat(b.style.top);
+    dragging = false;
+    // Raise above other bubbles while dragging (but still under card z-index=3)
+    b.style.zIndex = '2';
+  };
+
+  const onPointerMove = (e) => {
+    if(pointerId == null) return;
+    const dt = Date.now() - startTime;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const movedEnough = Math.hypot(dx,dy) > MOVE_PX;
+
+    if(dt > HOLD_MS || movedEnough){
+      // become draggable
+      dragging = true;
+      // stop bobbing while dragging
+      b.style.animation = 'none';
+      const newPos = boundToArena(startLeft + dx, startTop + dy);
+      b.style.left = newPos.x + 'px';
+      b.style.top  = newPos.y + 'px';
+    }
+  };
+
+  const onPointerUp = (e) => {
+    if(pointerId == null) return;
+    // restore gentle float after drag
+    if(dragging){ b.style.animation = ''; }
+    b.releasePointerCapture?.(pointerId);
+    pointerId = null;
+
+    if(!roundActive) return;
+
+    if(!dragging){
+      // QUICK TAP = select (pop)
+      b.classList.add('pop');
+      setTimeout(()=> b.remove(), 180);
+      if(isCorrect){
+        if(audioCtx){ popSound(); cheerSound(); }
+        handleCorrectAt(b);
+      }else{
+        if(audioCtx){ blip(260, .07, 'square', .09); }
+        streak = 0; streakEl.textContent = streak;
+        card.animate(
+          [{boxShadow:'0 12px 32px rgba(0,0,0,.15), inset 0 0 0 2px rgba(239,68,68,.5)'},
+           {boxShadow:'0 12px 32px rgba(0,0,0,.15), inset 0 0 0 2px rgba(124,58,237,.08)'}],
+          {duration:300, easing:'ease-out'}
+        );
+      }
+    }else{
+      // DRAG RELEASE — do nothing (no selection)
+      // Keep placed position
+    }
+
+    // return z-index to normal
+    b.style.zIndex = '1';
+  };
+
+  b.addEventListener('pointerdown', onPointerDown);
+  b.addEventListener('pointermove', onPointerMove);
+  b.addEventListener('pointerup', onPointerUp);
+  b.addEventListener('pointercancel', onPointerUp);
+
+  arena.appendChild(b);
+}
+
+function handleCorrectAt(el){
+  // use element's current position for confetti
+  const rect = el.getBoundingClientRect();
+  const aRect = arena.getBoundingClientRect();
+  const bx = rect.left - aRect.left + rect.width/2;
+  const by = rect.top  - aRect.top  + rect.height/2;
+
+  correctTotal++; streak++;
+  correctEl.textContent = correctTotal; streakEl.textContent = streak;
+  barEl.style.width = `${(correctTotal/VOCAB.length)*100}%`;
+  bigScore.textContent = `${correctTotal} / ${VOCAB.length}`;
+  timer = Math.min(timer + TIME_BONUS, TIME_CAP);
+  timeEl.textContent = Math.ceil(timer);
+  confettiBurst(bx,by,26);
+
+  roundActive = false;
+  setTimeout(()=> nextRoundStep(), 550);
+}
+
+function clearBubbles(){ document.querySelectorAll('.bubble').forEach(b=>b.remove()); }
+
+/* -------- ROUNDS -------- */
+function sliceForRound(idx){
+  const start = idx * WORDS_PER_ROUND;
+  const end   = Math.min(start + WORDS_PER_ROUND, deck.length);
+  return deck.slice(start, end).map(v => ({...v, seen:false}));
+}
+function pickCurrent(){
+  const rem = roundSlice.filter(r => !r.seen);
+  if(rem.length === 0) return null;
+  const q = rem[Math.floor(Math.random()*rem.length)];
+  q.seen = true; return q;
+}
+function buildStep(){
+  clearBubbles();
+  current = pickCurrent();
+  if(!current){ nextRound(); return; }
+  defEl.textContent = current.def;
+  const pool = shuffle(VOCAB.filter(v => v.word !== current.word)).slice(0,3);
+  const options = shuffle([current, ...pool]);
+  options.forEach(opt => makeBubble(opt.word, opt.word === opt.word && opt.word === current.word));
+  // ambience bubbles (drag-able too but harmless)
+  ['✨','🌟','💧','🔮','🫧'].sort(()=>Math.random()-0.5).slice(0,3)
+    .forEach(sym => makeBubble(sym, false));
+}
+function nextRoundStep(){ roundActive = true; buildStep(); }
+function nextRound(){
+  stopTimer(); roundActive=false; clearBubbles();
+  if(roundIndex + 1 >= ROUNDS){
+    defEl.innerHTML = `🎉 All rounds finished! Final score: <b>${correctTotal}</b> / <b>${VOCAB.length}</b>.`;
+    return;
+  }
+  defEl.innerHTML = `✅ Round ${roundIndex+1} complete!<br><small>Get ready… next round has less time.</small>`;
+  setTimeout(()=>{ roundIndex++; startRound(); }, 1200);
+}
+function startRound(){
+  roundEl.textContent = (roundIndex + 1);
+  roundBadge.textContent = `Round ${roundIndex + 1}`;
+  roundSlice = sliceForRound(roundIndex);
+  if(roundSlice.length===0){ if(roundIndex+1<ROUNDS){ roundIndex++; return startRound(); } return endGame(); }
+  startTimer(ROUND_TIME[roundIndex] ?? 30);
+  roundActive = true;
+  buildStep();
+}
+function endGame(){ stopTimer(); roundActive=false; clearBubbles();
+  defEl.innerHTML = `🎉 Game finished! Final score: <b>${correctTotal}</b> / <b>${VOCAB.length}</b>.`; }
+
+/* -------- TIMER -------- */
+function startTimer(startAt){
+  stopTimer(); timer = startAt; timeEl.textContent = Math.ceil(timer);
+  timerId = setInterval(()=>{
+    timer -= 1; timeEl.textContent = Math.max(0, Math.ceil(timer));
+    if(timer <= 0){
+      stopTimer(); roundActive=false; clearBubbles();
+      defEl.innerHTML = `⏰ Time’s up for Round ${roundIndex+1}!<br><small>You’ve got <b>${correctTotal}</b> / <b>${VOCAB.length}</b> so far.</small>`;
+    }
+  }, 1000);
+}
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; }}
+
+/* -------- FLOW -------- */
+function startGame(){
+  gameStarted = true; deck = shuffle(VOCAB); roundIndex = 0;
+  correctTotal=0; streak=0; barEl.style.width='0%';
+  correctEl.textContent='0'; streakEl.textContent='0';
+  bigScore.textContent = `0 / ${VOCAB.length}`;
+  roundSlice = sliceForRound(0); startRound();
+}
+
+/* -------- CONTROLS -------- */
+nextBtn.addEventListener('click', ()=>{ if(!gameStarted) return; if(!roundActive) nextRoundStep(); else { streak=0; streakEl.textContent='0'; nextRoundStep(); }});
+resetBtn.addEventListener('click', ()=>{ if(!gameStarted) return; stopTimer(); startGame(); });
+speakBtn.addEventListener('click', ()=> speak(`Definition: ${current ? current.def : ''}`));
+
+/* -------- START OVERLAY -------- */
+startBtn.addEventListener('click', ()=>{
+  ensureAudio(); // unlock/resume audio on iOS
+  startOverlay.style.display='none';
+  setTimeout(()=> startGame(), 0);
+});
+
+/* iOS: resume audio if Safari suspends it after tabbing */
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && audioCtx){ audioCtx.resume?.(); }});
+</script>
+</body>
+</html>
