@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HCA HOCO Dinner Survey — Ansley</title>
+  <meta name="description" content="RSVP + dinner selection for HCA Homecoming.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      /* Hebron colors (from public sources): cardinal + gold */
+      --cardinal:#C41E3A; /* primary */
+      --gold:#EEE8AC;     /* accent */
+      --ink:#0f172a;      /* slate-900 */
+      --muted:#6b7280;    /* slate-500 */
+      --card:#ffffff;
+      --bg:#0e0a0a;      /* base behind gradient */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Outfit, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:var(--ink);
+      /* Festive HOCO backdrop: cardinal/gold gradient + subtle confetti pattern */
+      background:
+        radial-gradient(1200px 800px at 100% -10%, rgba(196,30,58,.20) 0%, transparent 60%),
+        radial-gradient(900px 900px at 0% 110%, rgba(238,232,172,.35) 0%, transparent 60%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 10px, rgba(255,255,255,0.0) 10px 20px),
+        linear-gradient(135deg, #1b0f12 0%, #140b0d 40%, #1e1316 100%);
+      min-height:100%;
+    }
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(110%) blur(6px);
+      background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.65));
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .wrap{max-width:1000px; margin:0 auto; padding:20px}
+    .brand{display:flex; align-items:center; gap:14px}
+    .crest{width:40px; height:40px; background:var(--cardinal); border-radius:12px; display:grid; place-items:center; color:#fff; font-weight:700}
+    h1{margin:0; font-size:clamp(1.3rem, 1.2rem + 1vw, 2rem)}
+    .sub{color:var(--muted); font-size:.98rem}
+
+    .grid{display:grid; gap:18px}
+    @media(min-width:880px){ .grid{grid-template-columns:1fr 1fr} }
+
+    .card{background:var(--card); border:1px solid rgba(0,0,0,.06); border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    .card img{display:block; width:100%; height:220px; object-fit:cover}
+    .pad{padding:16px 18px}
+    .price{font-weight:700; color:var(--cardinal)}
+    .muted{color:var(--muted)}
+
+    .form{background:var(--card); border:1px solid rgba(0,0,0,.06); border-radius:22px; padding:20px; box-shadow:0 12px 30px rgba(0,0,0,.08)}
+    .row{display:grid; gap:12px; margin:14px 0}
+    @media(min-width:720px){ .row.cols-2{grid-template-columns:1fr 1fr} }
+    label{font-weight:600}
+    input[type="text"],input[type="email"],input[type="number"],select,textarea{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,.12); background:#fff; font:inherit
+    }
+    textarea{min-height:88px; resize:vertical}
+
+    .choices{display:grid; gap:12px}
+    .choice{display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid rgba(0,0,0,.12); border-radius:14px}
+
+    .cta{display:flex; flex-wrap:wrap; gap:12px; margin-top:18px}
+    button, .ghost{
+      border:0; padding:12px 16px; border-radius:14px; font-weight:700; cursor:pointer; font-family:inherit
+    }
+    .primary{background:var(--cardinal); color:#fff}
+    .ghost{background:#fff; border:1px solid rgba(0,0,0,.15)}
+
+    .pill{display:inline-block; background:var(--gold); color:#553; font-weight:700; padding:6px 10px; border-radius:999px; font-size:.85rem}
+    .foot{color:#fff; opacity:.9; text-align:center; font-size:.9rem; padding:24px}
+    .foot a{color:#fff}
+
+    /* fun, subtle float animation for the header crest */
+    @keyframes bob { 0%{transform:translateY(0)} 50%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
+    .crest{animation: bob 4s ease-in-out infinite}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap brand">
+      <div class="crest" aria-hidden="true">🦁</div>
+      <div>
+        <h1>HCA HOCO Dinner — RSVP & Meal Selection</h1>
+        <div class="sub">For Ansley’s group • Colors inspired by Hebron Christian Academy • Please submit one form per student.</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" style="margin-top:18px; margin-bottom:28px;">
+    <!-- MENU PREVIEW CARDS -->
+    <div class="grid" aria-label="Dinner options with photos">
+      <article class="card">
+        <img alt="Braised beef with roasted veggies on elegant plate" src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1600&auto=format&fit=crop"/>
+        <div class="pad">
+          <h2 style="margin:.2rem 0">Option 1 — Braised Beef <span class="muted">or</span> Chicken Alfredo</h2>
+          <div class="muted" style="margin:.3rem 0 .6rem">Served with salad, rolls, and beverage.</div>
+          <div class="price">$47 / person</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <img alt="Crispy chicken tenders with fries and dip" src="https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=1600&auto=format&fit=crop"/>
+        <div class="pad">
+          <h2 style="margin:.2rem 0">Option 2 — Chicken Tenders & Fries</h2>
+          <div class="muted" style="margin:.3rem 0 .6rem">Comes with sauce trio and beverage.</div>
+          <div class="price">$35 / person</div>
+        </div>
+      </article>
+    </div>
+
+    <!-- RSVP FORM -->
+    <section aria-label="RSVP form" style="margin-top:24px">
+      <form id="rsvp" class="form" onsubmit="handleSubmit(event)">
+        <div class="row cols-2">
+          <div>
+            <label for="student">Student Name</label>
+            <input id="student" name="student" type="text" placeholder="First & Last" required />
+          </div>
+          <div>
+            <label for="grade">Grade</label>
+            <select id="grade" name="grade" required>
+              <option value="" disabled selected>Select grade</option>
+              <option>9</option><option>10</option><option>11</option><option>12</option>
+            </select>
+          </div>
+        </div>
+        <div class="row cols-2">
+          <div>
+            <label for="parent">Parent/Guardian</label>
+            <input id="parent" name="parent" type="text" placeholder="Name" required />
+          </div>
+          <div>
+            <label for="email">Parent Email</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required />
+          </div>
+        </div>
+
+        <div class="row cols-2">
+          <div>
+            <label for="attending">Attending the HOCO dinner?</label>
+            <select id="attending" name="attending" required>
+              <option value="" disabled selected>Select</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label for="count">Number of meals</label>
+            <input id="count" name="count" type="number" min="1" step="1" value="1" required />
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Choose your entrée</label>
+          <div class="choices">
+            <label class="choice">
+              <input type="radio" name="entree" value="Option 1 — Braised Beef or Chicken Alfredo ($47)" data-price="47" required />
+              <span>Option 1 — Braised Beef <span class="muted">or</span> Chicken Alfredo <span class="pill">$47</span></span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="entree" value="Option 2 — Chicken Tenders & Fries ($35)" data-price="35" />
+              <span>Option 2 — Chicken Tenders & Fries <span class="pill">$35</span></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="notes">Allergies / dietary notes (optional)</label>
+          <textarea id="notes" name="notes" placeholder="e.g., no nuts, gluten free, dairy sensitivity…"></textarea>
+        </div>
+
+        <div class="row cols-2">
+          <div>
+            <label>Total (auto)</label>
+            <input id="total" type="text" value="$47.00" readonly />
+          </div>
+          <div>
+            <label for="phone">Parent Phone (optional)</label>
+            <input id="phone" name="phone" type="text" placeholder="(###) ###‑####" />
+          </div>
+        </div>
+
+        <div class="cta">
+          <button class="primary" type="submit">Submit RSVP</button>
+          <button class="ghost" type="button" onclick="copySummary()">Copy Summary</button>
+          <button class="ghost" type="button" onclick="downloadCSV()">Download CSV Row</button>
+        </div>
+        <div id="thanks" class="muted" style="margin-top:10px; display:none">Thanks! Your email draft has opened. If it didn’t, your popup blocker may have stopped it — you can instead use “Copy Summary” and paste into an email or text.</div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div>Made with 💛 for HCA HOCO • Colors: Cardinal & Gold • <a href="https://www.hebronlions.org/" target="_blank" rel="noopener">Hebron Christian Academy</a></div>
+  </footer>
+
+  <script>
+    const form = document.getElementById('rsvp');
+    const countEl = document.getElementById('count');
+    const totalEl = document.getElementById('total');
+
+    function currentPrice(){
+      const selected = form.querySelector('input[name="entree"]:checked');
+      if(!selected) return 47; // default until a choice is made
+      return Number(selected.dataset.price);
+    }
+    function fmt(n){ return n.toLocaleString(undefined,{style:'currency',currency:'USD'}) }
+    function updateTotal(){
+      const qty = Math.max(1, Number(countEl.value||1));
+      totalEl.value = fmt(qty * currentPrice());
+    }
+    form.addEventListener('change', updateTotal);
+    form.addEventListener('input', updateTotal);
+    updateTotal();
+
+    function summary(){
+      const data = new FormData(form);
+      const entree = form.querySelector('input[name="entree"]:checked');
+      const line = [
+        `Student: ${data.get('student')||''}`,
+        `Grade: ${data.get('grade')||''}`,
+        `Parent: ${data.get('parent')||''}`,
+        `Email: ${data.get('email')||''}`,
+        `Phone: ${data.get('phone')||''}`,
+        `Attending: ${data.get('attending')||''}`,
+        `Meals: ${data.get('count')||'1'}`,
+        `Entree: ${entree ? entree.value : ''}`,
+        `Total: ${document.getElementById('total').value}`,
+        `Notes: ${data.get('notes')||''}`
+      ].join('\n');
+      return line;
+    }
+
+    function handleSubmit(e){
+      e.preventDefault();
+      const to = 'REPLACE_WITH_ORGANIZER_EMAIL@example.com'; // <- set this to your collection email
+      const subject = encodeURIComponent('HCA HOCO Dinner RSVP');
+      const body = encodeURIComponent(summary());
+      const mailto = `mailto:${to}?subject=${subject}&body=${body}`;
+      window.location.href = mailto;
+      document.getElementById('thanks').style.display='block';
+    }
+
+    async function copySummary(){
+      try{ await navigator.clipboard.writeText(summary()); alert('Summary copied! Paste into email or text.'); }
+      catch{ alert('Could not copy automatically. Select the text after Download CSV or Submit.'); }
+    }
+
+    function downloadCSV(){
+      const data = new FormData(form);
+      const entree = form.querySelector('input[name="entree"]:checked');
+      const row = [
+        data.get('student')||'',
+        data.get('grade')||'',
+        data.get('parent')||'',
+        data.get('email')||'',
+        data.get('phone')||'',
+        data.get('attending')||'',
+        data.get('count')||'1',
+        (entree ? (entree.value||'') : ''),
+        document.getElementById('total').value,
+        (data.get('notes')||'')
+      ];
+      const header = ['Student','Grade','Parent','Email','Phone','Attending','Meals','Entree','Total','Notes'];
+      const csv = [header.join(','), row.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')].join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'hoco_rsvp_row.csv'; a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
