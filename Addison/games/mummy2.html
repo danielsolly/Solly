@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mummy’s Path to Freedom — Museum Map Edition</title>
+<style>
+  :root{
+    --paper:#faf3e1; --paper2:#f3e8cb; --ink:#2a1e11; --sub:#6f5a3b;
+    --frame:#d6c79f; --card:#fffaf0; --accent:#bd8f2d;
+    --good:#1e7e4d; --bad:#a53b3b; --stone:#e7d7b3; --stoneB:#c7b48b;
+    --stoneActive:#d6bf8e; --stoneActiveB:#a88a4a; --stoneDone:#9fd0a7; --stoneDoneB:#2f905f;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    background: radial-gradient(1200px 700px at 10% -10%, #fff9e7, #f5ebcf 45%, #ecdfc1 100%), var(--paper);
+    font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+    line-height:1.55; display:flex; align-items:center; justify-content:center; padding:18px;
+  }
+  .app{
+    width:min(1100px,100%); background:linear-gradient(180deg,var(--card),var(--paper2));
+    border:2px solid var(--frame); border-radius:18px; overflow:hidden;
+    box-shadow:0 10px 36px rgba(0,0,0,.16), inset 0 0 0 1px rgba(255,255,255,.55);
+  }
+  header{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:14px 18px; border-bottom:2px solid var(--frame);
+    background:linear-gradient(180deg,#fff5d8,#f4ebd0);
+  }
+  .logo{display:flex; align-items:center; gap:12px; font-weight:800}
+  .logo svg{width:44px;height:44px}
+  .title{display:flex; flex-direction:column}
+  .subtitle{font-size:12px; color:var(--sub)}
+  .hud{display:flex; gap:10px; flex-wrap:wrap}
+  .pill{background:#fffdf5;border:1px solid var(--frame);border-radius:999px;padding:6px 11px;font-size:14px}
+  .amulets{display:flex; gap:6px; align-items:center}
+  .amulet{width:20px; height:20px}
+  main{padding:16px}
+
+  /* Board map wrapper */
+  .board{
+    background:#fffef7; border:1px solid var(--frame); border-radius:14px; padding:10px;
+  }
+  .mapWrap{
+    position:relative; width:100%; aspect-ratio: 16/9; /* responsive board */
+    border:1px dashed #e3d5b6; border-radius:12px; background:
+      radial-gradient(800px 500px at 80% 0%, #fff7df, #f7edd3 50%, #efe2c3 100%);
+  }
+  svg.map{width:100%; height:100%; display:block}
+  .mummy{
+    position:absolute; width:60px; height:60px; pointer-events:none;
+    transition: transform .6s ease;
+  }
+  .card{background:#fffef7; border:1px solid var(--frame); border-radius:14px; padding:16px; margin-top:12px}
+  .museum-label{display:flex; align-items:center; gap:10px; color:var(--sub); text-transform:uppercase; letter-spacing:.06em; font-weight:800; font-size:12px}
+  .museum-label svg{width:24px;height:24px}
+  .prompt{font-weight:900; font-size:22px; margin:.45em 0 .2em}
+  .clue{color:var(--sub); font-size:14px; margin:.2em 0 .4em}
+  .choices{display:grid; gap:10px; margin-top:8px}
+  @media (min-width:720px){ .choices{grid-template-columns:1fr 1fr} }
+  .choice{ text-align:left; cursor:pointer; padding:12px 14px; border-radius:12px; background:#fffef9; border:1px solid var(--frame); transition:.15s }
+  .choice:hover{ transform:translateY(-1px); box-shadow:0 2px 0 #eadbbb }
+  .choice.correct{background:#eef8f1; border-color:#2f905f; color:#14492b}
+  .choice.wrong{background:#fdecec; border-color:#c96262; color:#6b1f1f}
+  .foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px; color:var(--sub); font-size:14px}
+  button{ background:linear-gradient(180deg,#f3d186,#e0bb67); color:#352400; border:1px solid #a9822d; border-radius:10px; font-weight:800; padding:8px 12px; cursor:pointer }
+  .hidden{display:none !important}
+  .end{text-align:center; padding:30px 16px}
+  .end h2{margin:0 0 8px; color:#3a2a08}
+  details summary{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-label="Mummy’s Path to Freedom">
+  <header>
+    <div class="logo">
+      <!-- Papyrus scroll icon -->
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="10" y="12" width="44" height="40" rx="6" fill="#f5e7c7" stroke="#bfa06c" stroke-width="2"/>
+        <path d="M16 20h32M16 28h32M16 36h26M16 44h18" stroke="#b78f55" stroke-width="2"/>
+      </svg>
+      <div class="title">
+        <div>Mummy’s Path to Freedom</div>
+        <div class="subtitle">Board-Map Museum Walk — Answer to advance</div>
+      </div>
+    </div>
+    <div class="hud" aria-live="polite">
+      <div class="pill">Exhibit: <strong id="qIndex">1</strong>/<span id="qTotal">12</span></div>
+      <div class="pill">Category: <strong id="qCat">—</strong></div>
+      <div class="pill">Timer: <strong id="qTime">45</strong>s</div>
+      <div class="pill amulets" title="Amulets (lives)">
+        <svg class="amulet" viewBox="0 0 64 64"><path d="M32 6v28a10 10 0 1 0 0 20" fill="none" stroke="#a3771f" stroke-width="5"/><circle cx="32" cy="8" r="5" fill="#a3771f"/></svg>
+        <svg class="amulet" viewBox="0 0 64 64"><path d="M32 6v28a10 10 0 1 0 0 20" fill="none" stroke="#a3771f" stroke-width="5"/><circle cx="32" cy="8" r="5" fill="#a3771f"/></svg>
+        <svg class="amulet" viewBox="0 0 64 64"><path d="M32 6v28a10 10 0 1 0 0 20" fill="none" stroke="#a3771f" stroke-width="5"/><circle cx="32" cy="8" r="5" fill="#a3771f"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="board">
+      <div class="mapWrap">
+        <!-- Map SVG: artifacts, curved path, numbered stones, START/FINISH labels -->
+        <svg class="map" viewBox="0 0 1200 675" preserveAspectRatio="none">
+          <!-- background artifacts (simple SVG drawings) -->
+          <!-- Pyramid -->
+          <g opacity=".25">
+            <path d="M1050 430 L1150 600 L950 600 Z" fill="#caa866" stroke="#a7894f" stroke-width="3"/>
+            <rect x="150" y="90" width="120" height="80" fill="#d7caa4" stroke="#b9aa80" stroke-width="3"/>
+            <path d="M170 140h80M170 160h60" stroke="#b9aa80" stroke-width="5"/>
+            <!-- Obelisk -->
+            <path d="M880 120 L905 60 L930 120 L930 260 L880 260 Z" fill="#d7caa4" stroke="#b9aa80" stroke-width="3"/>
+            <!-- Sarcophagus -->
+            <rect x="70" y="520" rx="30" ry="30" width="160" height="90" fill="#d7caa4" stroke="#b9aa80" stroke-width="3"/>
+            <!-- Ankh -->
+            <path d="M620 130 a30 24 0 1 1 60 0 v20 h20 v30 h-40 v-30 h20 v-20 a30 24 0 1 0 -60 0 v20 h20 v30 h-40 v-30 h20z" fill="#d7caa4" stroke="#b9aa80" stroke-width="3"/>
+            <!-- Scarab -->
+            <ellipse cx="350" cy="520" rx="40" ry="30" fill="#d7caa4" stroke="#b9aa80" stroke-width="3"/>
+            <circle cx="330" cy="510" r="8" fill="#b9aa80"/>
+            <circle cx="370" cy="510" r="8" fill="#b9aa80"/>
+          </g>
+
+          <!-- Curved travel path (hidden stroke; we read coordinates from this) -->
+          <path id="travelPath"
+                d="M100,580
+                   C200,540 260,520 320,520
+                   C420,520 480,540 560,500
+                   C640,460 640,360 560,330
+                   C460,290 360,300 300,260
+                   C240,220 240,160 320,140
+                   C420,115 540,150 640,180
+                   C760,215 860,210 920,260
+                   C1000,325 1000,420 920,480
+                   C860,525 760,540 690,560
+                   C600,585 520,600 460,610
+                   C360,625 220,620 160,600"
+                fill="none" stroke="transparent" stroke-width="1"/>
+
+          <!-- Numbered stones (12 spaces) positioned along the same path -->
+          <g id="stones"></g>
+
+          <!-- START and FINISH labels -->
+          <g font-family="Georgia, serif" font-weight="700" fill="#6b5431">
+            <text id="startLabel" x="100" y="610" font-size="28">START</text>
+            <text id="finishLabel" x="900" y="585" font-size="28">FINISH</text>
+          </g>
+        </svg>
+
+        <!-- Cartoon bandaged mummy (not toilet paper!) -->
+        <svg id="mummy" class="mummy" viewBox="0 0 64 64" aria-hidden="true">
+          <g>
+            <!-- torso & head -->
+            <ellipse cx="32" cy="40" rx="14" ry="12" fill="#f7f0dc" stroke="#c9b89a" stroke-width="2"/>
+            <circle cx="32" cy="25" r="10" fill="#f7f0dc" stroke="#c9b89a" stroke-width="2"/>
+            <!-- bandage wraps -->
+            <path d="M22 23h20M20 27h24M22 31h20M20 36h24M22 41h20" stroke="#d8cdb4" stroke-width="3"/>
+            <!-- eyes -->
+            <circle cx="28" cy="23" r="2.6" fill="#3e2d16"/>
+            <circle cx="36" cy="23" r="2.6" fill="#3e2d16"/>
+            <!-- limbs -->
+            <path d="M18 40 Q22 38 24 42M46 40 Q42 38 40 42M26 50 Q28 54 30 52M38 50 Q36 54 34 52" stroke="#c9b89a" stroke-width="2" fill="none"/>
+            <!-- friendly smile -->
+            <path d="M28 28 Q32 31 36 28" stroke="#3e2d16" stroke-width="2" fill="none"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <div class="museum-label" id="label"></div>
+      <h2 class="prompt" id="prompt">Loading…</h2>
+      <div class="clue" id="clue"></div>
+      <div class="choices" id="choices" role="listbox" aria-label="Answer choices"></div>
+      <div class="foot">
+        <span>Correct = advance one space. Wrong = lose an amulet (correct answers can restore one).</span>
+        <div>
+          <button id="skipBtn" title="Skip this question">Skip</button>
+          <button id="nextBtn" class="hidden">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="end hidden" id="end">
+      <h2 id="endTitle">You reached the Tomb! 🏺</h2>
+      <p id="endMsg"></p>
+      <p><strong>Score:</strong> <span id="scoreOut">0</span>/<span id="qTotal2">12</span></p>
+      <button onclick="restart()">Walk Again</button>
+    </div>
+
+    <details style="margin-top:10px">
+      <summary>Answer Key (teacher)</summary>
+      <ol id="answerKey"></ol>
+    </details>
+  </main>
+</div>
+
+<script>
+/* ===== Sound (chime/thud/step) ===== */
+const AudioC = window.AudioContext || window.webkitAudioContext;
+let actx=null;
+function initAudio(){ if(!actx) actx=new AudioC(); }
+function tone(freq=880,dur=0.16,type="sine",gain=0.05){
+  if(!actx) return;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g); g.connect(actx.destination);
+  o.start(); setTimeout(()=>{ g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur); o.stop(actx.currentTime+dur+0.02); }, 10);
+}
+function chime(){ tone(1046,0.14,"sine",0.06); setTimeout(()=>tone(1318,0.14,"sine",0.05),110); }
+function thud(){ if(!actx) return; const o=actx.createOscillator(), g=actx.createGain();
+  o.type="triangle"; o.frequency.setValueAtTime(120, actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(42, actx.currentTime+0.26);
+  g.gain.value=0.07; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.28); }
+function step(){ tone(300,0.05,"square",0.03); }
+
+/* ===== Icons per category ===== */
+const ICONS={
+  "Pharaohs & Leaders": `<svg viewBox="0 0 64 64"><path d="M42 26c0 5.5-4.5 10-10 10s-10-4.5-10-10 4.5-10 10-10 10 4.5 10 10Z" fill="#e6c98e" stroke="#bfa06c" stroke-width="2"/><rect x="20" y="36" width="24" height="16" rx="4" fill="#f6e7c3" stroke="#bfa06c" stroke-width="2"/></svg>`,
+  "Gods & Beliefs": `<svg viewBox="0 0 64 64"><path d="M32 6v52M12 32h40" stroke="#bfa06c" stroke-width="4"/><circle cx="32" cy="20" r="8" fill="#f0d59a" stroke="#bfa06c" stroke-width="2"/></svg>`,
+  "Pyramids & Tombs": `<svg viewBox="0 0 64 64"><path d="M32 8L58 48H6Z" fill="#e8d09f" stroke="#bfa06c" stroke-width="2"/></svg>`,
+  "Ancient Egypt Facts": `<svg viewBox="0 0 64 64"><rect x="12" y="12" width="40" height="40" rx="6" fill="#f5e7c7" stroke="#bfa06c" stroke-width="2"/><path d="M20 24h24M20 34h24M20 44h18" stroke="#b78f55" stroke-width="2"/></svg>`
+};
+
+/* ===== Question bank (from your worksheets) ===== */
+const BANK=[
+  {q:"Which pharaoh was a female ruler who focused on trade instead of war?", choices:["Hatshepsut","Nefertiti","Cleopatra VII","Sobekneferu"], answer:0, cat:"Pharaohs & Leaders"},
+  {q:"Who was the young king whose tomb was found mostly untouched?", choices:["Akhenaten","Tutankhamun","Khufu","Djoser"], answer:1, cat:"Pharaohs & Leaders"},
+  {q:"Which pharaoh built the Great Pyramid at Giza?", choices:["Khufu (Cheops)","Sneferu","Pepi II","Ramses II"], answer:0, cat:"Pharaohs & Leaders"},
+  {q:"Who was known as Egypt’s first great engineer, helping design early pyramids?", choices:["Imhotep","Amenhotep III","Thutmose III","Narmer"], answer:0, cat:"Pharaohs & Leaders"},
+  {q:"Who expanded Egypt’s empire through conquest and war?", choices:["Thutmose III","Narmer","Djoser","Pepi II"], answer:0, cat:"Pharaohs & Leaders"},
+  {q:"Which pharaoh ruled for over 60 years and built more monuments than anyone else?", choices:["Ramses II","Khafre","Tutankhamun","Amenemhat I"], answer:0, cat:"Pharaohs & Leaders"},
+  {q:"What did Amon-Re represent to the Egyptians?", choices:["The Sun","The Nile","War","Writing"], answer:0, cat:"Gods & Beliefs"},
+  {q:"What was Osiris the god of?", choices:["The Underworld and rebirth","The desert","The sky","Crafts"], answer:0, cat:"Gods & Beliefs"},
+  {q:"Which god was believed to weigh people’s hearts after they died?", choices:["Anubis","Horus","Ra","Ptah"], answer:0, cat:"Gods & Beliefs"},
+  {q:"What animal was sacred to Anubis?", choices:["Jackal","Cat","Ibis","Crocodile"], answer:0, cat:"Gods & Beliefs"},
+  {q:"Every pharaoh was thought to be which god in human form?", choices:["Horus","Set","Thoth","Ra"], answer:0, cat:"Gods & Beliefs"},
+  {q:"What was the main purpose of the pyramids?", choices:["Royal tombs / burials","Temples for living gods","Storage buildings","Houses"], answer:0, cat:"Pyramids & Tombs"},
+  {q:"What city is home to the Great Pyramid?", choices:["Giza","Memphis","Thebes","Saqqara"], answer:0, cat:"Pyramids & Tombs"},
+  {q:"What is the Valley of the Kings, and who was buried there?", choices:["A royal cemetery for New Kingdom pharaohs","A market for traders","A harbor on the Nile","A village for pyramid workers"], answer:0, cat:"Pyramids & Tombs"},
+  {q:"What structure stands in front of the Pyramid of Khafre?", choices:["The Great Sphinx","An obelisk","A lighthouse","A ziggurat"], answer:0, cat:"Pyramids & Tombs"},
+  {q:"What is the name for the king or queen of ancient Egypt?", choices:["Pharaoh","Emperor","Caesar","Sultan"], answer:0, cat:"Ancient Egypt Facts"},
+  {q:"Egypt was originally divided into two kingdoms. What were they called?", choices:["Upper Egypt and Lower Egypt","North Egypt and South Egypt","East Egypt and West Egypt","Old Egypt and New Egypt"], answer:0, cat:"Ancient Egypt Facts"},
+  {q:"Which ruler was first to unite Upper and Lower Egypt?", choices:["Narmer (Menes)","Ramses II","Thutmose III","Khufu"], answer:0, cat:"Ancient Egypt Facts"},
+  {q:"When a pharaoh died, what process preserved the body before burial?", choices:["Mummification","Cremation","Freezing","Cloning"], answer:0, cat:"Ancient Egypt Facts"},
+];
+
+/* ===== Settings ===== */
+const STEPS = 12;               // spaces on the board (and questions per run)
+const TIME_PER_Q = 45;          // seconds per question
+const MAX_AMULETS = 3;
+
+/* ===== DOM ===== */
+const map = document.querySelector('svg.map');
+const travelPath = document.getElementById('travelPath');
+const stonesGroup = document.getElementById('stones');
+const mummy = document.getElementById('mummy');
+
+const qIndex = document.getElementById('qIndex');
+const qTotal = document.getElementById('qTotal');
+const qTotal2 = document.getElementById('qTotal2');
+const qCat = document.getElementById('qCat');
+const qTime = document.getElementById('qTime');
+const label = document.getElementById('label');
+const promptEl = document.getElementById('prompt');
+const clueEl = document.getElementById('clue');
+const choicesEl = document.getElementById('choices');
+const nextBtn = document.getElementById('nextBtn');
+const skipBtn = document.getElementById('skipBtn');
+const quizCard = document.getElementById('quizCard');
+const endView = document.getElementById('end');
+const scoreOut = document.getElementById('scoreOut');
+const endTitle = document.getElementById('endTitle');
+const endMsg = document.getElementById('endMsg');
+const answerKey = document.getElementById('answerKey');
+const amuletEls = [...document.querySelectorAll('.amulet')];
+
+/* ===== Game State ===== */
+let order=[], idx=0, score=0, timeLeft=TIME_PER_Q, timer=null, amulets=MAX_AMULETS;
+
+/* ===== Helpers ===== */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function sampleQuestions(){ const b=[...BANK]; shuffle(b); return b.slice(0, STEPS); }
+
+/* Position helpers for stones and mummy along the path */
+function pathLen(){ return travelPath.getTotalLength(); }
+function pointAt(t){ return travelPath.getPointAtLength(t); }
+function coordAtStep(stepIdx){
+  const len = pathLen();
+  const seg = len * (stepIdx / (STEPS-1));   // distribute 0..len across 12 stones
+  return pointAt(seg);
+}
+function drawStones(){
+  stonesGroup.innerHTML='';
+  for(let i=0;i<STEPS;i++){
+    const pt = coordAtStep(i);
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', pt.x);
+    circle.setAttribute('cy', pt.y);
+    circle.setAttribute('r', 18);
+    circle.setAttribute('fill', i===0 ? getComputedStyle(document.documentElement).getPropertyValue('--stoneActive') : getComputedStyle(document.documentElement).getPropertyValue('--stone'));
+    circle.setAttribute('stroke', i===0 ? getComputedStyle(document.documentElement).getPropertyValue('--stoneActiveB') : getComputedStyle(document.documentElement).getPropertyValue('--stoneB'));
+    circle.setAttribute('stroke-width','3');
+
+    const num = document.createElementNS('http://www.w3.org/2000/svg','text');
+    num.setAttribute('x', pt.x);
+    num.setAttribute('y', pt.y+6);
+    num.setAttribute('text-anchor','middle');
+    num.setAttribute('font-family','Georgia, serif');
+    num.setAttribute('font-weight','700');
+    num.setAttribute('fill','#6b5431');
+    num.setAttribute('font-size','16');
+    num.textContent = (i+1);
+
+    g.appendChild(circle); g.appendChild(num); stonesGroup.appendChild(g);
+  }
+}
+
+/* Move the mummy to a given step index (0..STEPS-1) */
+function placeMummy(step){
+  const pt = coordAtStep(step);
+  // map viewBox (1200x675) to CSS pixels of .mapWrap
+  const wrap = document.querySelector('.mapWrap');
+  const rect = wrap.getBoundingClientRect();
+  const x = (pt.x/1200)*rect.width - 30; // center on mummy (60px wid)
+  const y = (pt.y/675)*rect.height - 60; // place above stone
+  mummy.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+/* Answer key */
+function fillAnswerKey(){
+  answerKey.innerHTML='';
+  order.forEach(q=>{
+    const li=document.createElement('li');
+    li.textContent=`${q.q} — ${q.choices[q.answer]} (${q.cat})`;
+    answerKey.appendChild(li);
+  });
+}
+
+/* Amulets (lives) */
+function setAmulets(n){
+  amulets = Math.max(0, Math.min(MAX_AMULETS, n));
+  amuletEls.forEach((el,i)=>{ el.style.opacity = i < amulets ? 1 : 0.25; });
+}
+
+/* ===== Game Flow ===== */
+function start(){
+  qTotal.textContent=STEPS; qTotal2.textContent=STEPS;
+  order=sampleQuestions(); fillAnswerKey();
+  idx=0; score=0; timeLeft=TIME_PER_Q; setAmulets(MAX_AMULETS);
+  drawStones(); placeMummy(0);
+  quizCard.classList.remove('hidden'); endView.classList.add('hidden');
+  show();
+  window.addEventListener('resize', ()=>placeMummy(idx));
+}
+function show(){
+  clearInterval(timer); initAudio();
+  const q=order[idx];
+  qIndex.textContent=idx+1; qCat.textContent=q.cat; qTime.textContent=timeLeft;
+  label.innerHTML=(ICONS[q.cat]||"")+`<span>Exhibit ${idx+1} — ${q.cat}</span>`;
+  promptEl.textContent=q.q; clueEl.textContent=q.clue||""; choicesEl.innerHTML='';
+  const orderChoices=q.choices.map((c,i)=>({c,i})); shuffle(orderChoices).forEach(({c,i})=>{
+    const b=document.createElement('button'); b.className='choice'; b.textContent=c; b.onclick=()=>check(i,b); choicesEl.appendChild(b);
+  });
+  nextBtn.classList.add('hidden'); skipBtn.disabled=false;
+  timer=setInterval(()=>{ timeLeft--; qTime.textContent=timeLeft; if(timeLeft<=0){ clearInterval(timer); lock(false); thud(); } },1000);
+}
+function markStones(){
+  const circles = stonesGroup.querySelectorAll('circle');
+  circles.forEach((c,i)=>{
+    if(i<idx){ c.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--stoneDone')); c.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--stoneDoneB')); }
+    else if(i===idx){ c.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--stoneActive')); c.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--stoneActiveB')); }
+    else { c.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--stone')); c.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--stoneB')); }
+  });
+}
+function check(i,btn){
+  const q=order[idx]; const correct=(i===q.answer);
+  if(correct){
+    score++; btn.classList.add('correct'); chime(); step();
+    setAmulets(Math.min(MAX_AMULETS, amulets+1)); // redeem one on correct
+  }else{
+    btn.classList.add('wrong'); thud(); setAmulets(amulets-1);
+  }
+  lock(correct);
+}
+function lock(){
+  clearInterval(timer);
+  const q=order[idx];
+  [...document.querySelectorAll('.choice')].forEach(b=>{ b.disabled=true; if(b.textContent===q.choices[q.answer]) b.classList.add('correct'); });
+  nextBtn.classList.remove('hidden'); skipBtn.disabled=true;
+}
+function next(){
+  if(idx < STEPS-1){
+    idx++; timeLeft=TIME_PER_Q;
+    placeMummy(idx); markStones(); show();
+  }else{
+    end(true);
+  }
+}
+function skip(){ next(); }
+function end(reachedEnd){
+  quizCard.classList.add('hidden'); endView.classList.remove('hidden'); scoreOut.textContent=score;
+  if(reachedEnd){
+    if(score>=Math.ceil(STEPS*0.8)) { endTitle.textContent="You reached the Tomb! 🏺"; endMsg.textContent="Golden light floods the hall — freedom!"; }
+    else if(score>=Math.ceil(STEPS*0.6)) { endTitle.textContent="So close to the Tomb…"; endMsg.textContent="One more stroll through the exhibits will do it."; }
+    else { endTitle.textContent="The Tomb Remains Sealed…"; endMsg.textContent="Study the labels and try again."; }
+  }else{
+    endTitle.textContent="The Tomb Remains Sealed…"; endMsg.textContent="Your torch flickers out — but the afterlife awaits another try!";
+  }
+}
+function restart(){ start(); }
+
+/* ===== Events ===== */
+nextBtn.addEventListener('click', next);
+skipBtn.addEventListener('click', skip);
+document.body.addEventListener('click', initAudio, {once:true});
+
+setTimeout(()=>{ start(); markStones(); }, 50);
+</script>
+</body>
+</html>
