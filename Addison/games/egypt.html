@@ -3,365 +3,233 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ancient Egypt Museum Walk – Path to the Tomb</title>
+<title>Escape the Tomb: The Pharaoh’s Challenge</title>
 <style>
-  /* —— Theme: light parchment, high contrast —— */
-  :root{
-    --paper:#f7f1e1;
-    --ink:#2b2113;
-    --accent:#b8860b;
-    --accent2:#7a5a12;
-    --good:#1a7f47;
-    --bad:#a52a2a;
-    --frame:#d8c9a4;
-    --card:#fffaf0;
+  :root {
+    --bg: #1a1420;
+    --card: #251d2e;
+    --accent: #f0c75e;
+    --good: #6fe0a1;
+    --bad: #ff6c7a;
+    --text: #fdfaf4;
+    --subtext: #d0c8c0;
+    --border: #3a2f43;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background:
-      radial-gradient(1000px 600px at 10% -10%, #fff7df 0%, #f3ead1 45%, #e9e0c6 100%),
-      var(--paper);
-    color:var(--ink);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
-    line-height:1.5;
-    display:flex;align-items:center;justify-content:center;
-    padding:20px;
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
   }
-  .app{
-    width:min(980px,100%);
-    background:linear-gradient(180deg,#fffaf0,#f3ecd7);
-    border:2px solid var(--frame);
-    border-radius:18px;
-    box-shadow:0 6px 30px rgba(0,0,0,.15), inset 0 0 0 1px rgba(255,255,255,.6);
-    overflow:hidden;
+  .app {
+    width: min(900px, 100%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
   }
-  header{
-    display:flex;gap:14px;align-items:center;justify-content:space-between;
-    padding:16px 18px;border-bottom:2px solid var(--frame);
-    background:linear-gradient(180deg,#fff6d8,#f6edd0);
+  header {
+    background: #1d1622;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
   }
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800}
-  .logo .title{display:flex;flex-direction:column}
-  .logo .subtitle{font-size:12px;color:#6b5431}
-  .logo svg{width:40px;height:40px}
-  .hud{display:flex;gap:10px;flex-wrap:wrap}
-  .pill{
-    background:#fffaf0;border:1px solid var(--frame);
-    padding:6px 10px;border-radius:999px;font-size:14px;
+  .logo {
+    font-weight: 700;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  main{padding:18px}
-  .gallery{
-    display:grid;grid-template-columns:1fr;gap:14px;
+  .logo svg {
+    width: 32px;
+    height: 32px;
   }
-  .card{
-    background:var(--card);
-    border:1px solid var(--frame);
-    border-radius:14px;
-    padding:16px;
+  .badge {
+    font-size: 0.8em;
+    color: var(--accent);
+    font-weight: 500;
   }
-  .museum-label{
-    display:flex;align-items:center;gap:10px;
-    color:#6b5431;font-weight:700;text-transform:uppercase;font-size:12px;
-    letter-spacing:.06em;
+  .hud {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 0.9em;
   }
-  .museum-label svg{width:22px;height:22px}
-  .prompt{font-weight:800;font-size:22px;margin:.35em 0 .25em}
-  .clue{color:#7b6a48;font-size:14px;margin-bottom:6px}
-  .choices{display:grid;gap:10px;margin-top:8px}
-  @media (min-width:720px){ .choices{grid-template-columns:1fr 1fr} }
-  .choice{
-    background:#fffef7;border:1px solid var(--frame);
-    border-radius:12px;padding:12px 14px;cursor:pointer;text-align:left;
-    transition:.15s;
+  .pill {
+    background: #352a40;
+    border-radius: 999px;
+    padding: 6px 12px;
   }
-  .choice:hover{transform:translateY(-1px);box-shadow:0 2px 0 #e4d6b1}
-  .choice.correct{border-color:#2f9b60;background:#eef8f1;color:#124527}
-  .choice.wrong{border-color:#b86b6b;background:#fceeee;color:#6b2222}
-  .foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:14px;color:#6b5431}
-  button{
-    background:linear-gradient(180deg,#f5d483,#e1bd66);
-    border:1px solid #a9832e;color:#3b2b07;border-radius:10px;
-    font-weight:800;padding:8px 12px;cursor:pointer
+  main {
+    padding: 20px;
   }
-  .hidden{display:none !important}
-  /* —— Path / exhibits —— */
-  .path{
-    display:flex;gap:8px;align-items:center;justify-content:center;
-    padding:10px 0;margin-bottom:10px;flex-wrap:wrap
+  .card {
+    background: #2d2436;
+    border-radius: 12px;
+    padding: 20px;
   }
-  .stone{
-    width:30px;height:30px;border-radius:50%;
-    background:#e6d7b2;border:1.5px solid #c8b285;box-shadow:inset 0 1px 0 #fff;
-    position:relative;
+  progress {
+    width: 100%;
+    height: 14px;
+    border-radius: 7px;
+    background: #3b2e45;
   }
-  .stone.active{background:#dcc386;border-color:#aa8a49}
-  .stone.done{background:#9dd2a5;border-color:#2f9b60}
-  .end{text-align:center;padding:30px 16px}
-  .end h2{margin:0 0 8px;color:#3b2b07}
-  details summary{cursor:pointer}
+  progress::-webkit-progress-bar {
+    background: #3b2e45;
+  }
+  progress::-webkit-progress-value {
+    background: linear-gradient(90deg, var(--accent), #cfa03a);
+    border-radius: 7px;
+  }
+  .grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  @media (min-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .choice {
+    padding: 12px 14px;
+    background: #3a2f46;
+    border: 1px solid #4b3b57;
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .choice:hover {
+    background: #4b3b57;
+  }
+  .choice.correct {
+    background: #254a38;
+    border-color: var(--good);
+  }
+  .choice.wrong {
+    background: #552a33;
+    border-color: var(--bad);
+  }
+  button {
+    background: var(--accent);
+    color: #231900;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .foot {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    color: var(--subtext);
+  }
+  .hidden {
+    display: none !important;
+  }
+  .end {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .end h2 {
+    color: var(--accent);
+  }
+  .muted {
+    color: var(--subtext);
+  }
 </style>
 </head>
 <body>
-<div class="app" role="application" aria-label="Ancient Egypt Museum Walk">
-  <header>
-    <div class="logo">
-      <!-- Papyrus scroll icon -->
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="10" y="12" width="44" height="40" rx="6" fill="#f5e7c7" stroke="#bfa06c" stroke-width="2"/>
-        <path d="M16 20h32M16 28h32M16 36h26M16 44h18" stroke="#b78f55" stroke-width="2" />
-      </svg>
-      <div class="title">
-        <div>Museum Walk</div>
-        <div class="subtitle">Path to the Tomb – Ancient Egypt Review</div>
+  <div class="app">
+    <header>
+      <div class="logo">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="20" r="10" fill="#f0c75e" />
+          <ellipse cx="32" cy="40" rx="12" ry="10" fill="#58c2d6" />
+        </svg>
+        Escape the Tomb
+        <div class="badge">The Pharaoh’s Challenge</div>
       </div>
-    </div>
-    <div class="hud" aria-live="polite">
-      <div class="pill">Exhibit: <strong id="qIndex">1</strong>/<span id="qTotal">12</span></div>
-      <div class="pill">Category: <strong id="qCat">—</strong></div>
-      <div class="pill">Timer: <strong id="qTime">45</strong>s</div>
-    </div>
-  </header>
-
-  <main>
-    <!-- Path stones -->
-    <div class="path" id="path"></div>
-
-    <div class="card" id="quizCard">
-      <div class="museum-label" id="label">
-        <svg viewBox="0 0 64 64"><path d="M32 6 L58 26 L6 26 Z" fill="#e8d09f" stroke="#bfa06c" stroke-width="2"/><rect x="14" y="26" width="36" height="28" fill="#f6e7c3" stroke="#bfa06c" stroke-width="2"/></svg>
-        <span id="labelText">Exhibit</span>
+      <div class="hud">
+        <div class="pill">Question: <strong id="qIndex">1</strong>/10</div>
+        <div class="pill">Category: <strong id="qCat">–</strong></div>
+        <div class="pill">Timer: <strong id="qTime">60</strong>s</div>
       </div>
-      <h2 class="prompt" id="prompt">Loading…</h2>
-      <div class="clue" id="clue"></div>
-      <div class="choices" id="choices" role="listbox" aria-label="Answer choices"></div>
-      <div class="foot">
-        <span>Answer correctly to move to the next exhibit.</span>
-        <div>
-          <button id="skipBtn" title="Skip this question">Skip</button>
-          <button id="nextBtn" class="hidden">Next</button>
+    </header>
+    <main>
+      <div class="card" id="quiz">
+        <p><strong>Goal:</strong> Answer 10 questions to unlock the tomb doors before time runs out.</p>
+        <progress id="doorProg" value="0" max="10"></progress>
+        <h2 id="prompt">Loading…</h2>
+        <div class="muted" id="clue"></div>
+        <div class="grid" id="choices"></div>
+        <div class="foot">
+          <span>Each correct answer unlocks a chamber door.</span>
+          <div>
+            <button id="skipBtn">Skip</button>
+            <button id="nextBtn" class="hidden">Next</button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="end hidden" id="end">
-      <h2 id="endTitle">You reached the Tomb! 🏺</h2>
-      <p id="endMsg"></p>
-      <p><strong>Score:</strong> <span id="scoreOut">0</span>/<span id="qTotal2">12</span></p>
-      <button onclick="restart()">Walk Again</button>
-    </div>
-
-    <details style="margin-top:10px">
-      <summary>Answer Key (teacher)</summary>
-      <ol id="answerKey"></ol>
-    </details>
-  </main>
-</div>
+      <div class="end hidden" id="end">
+        <h2 id="endTitle"></h2>
+        <p id="endMsg"></p>
+        <p><strong>Score:</strong> <span id="scoreOut">0</span>/10</p>
+        <button onclick="restart()">Play Again</button>
+      </div>
+    </main>
+  </div>
 
 <script>
-/* ========= Sound (gentle chime / soft drum via WebAudio) ========= */
-const AudioC = window.AudioContext || window.webkitAudioContext;
-let actx = null;
-function initAudio(){ if(!actx) actx = new AudioC(); }
-function playTone(freq=880, dur=0.18, type="sine", gain=0.05){
-  if(!actx) return;
-  const o = actx.createOscillator();
-  const g = actx.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.value = gain; o.connect(g); g.connect(actx.destination);
-  o.start();
-  setTimeout(()=>{ g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur); o.stop(actx.currentTime+dur+0.02); }, 10);
-}
-function chime(){ playTone(1046,0.15,"sine",0.06); setTimeout(()=>playTone(1318,0.15,"sine",0.05),120); }
-function thud(){
-  if(!actx) return;
-  const o = actx.createOscillator();
-  const g = actx.createGain();
-  o.type="triangle"; o.frequency.setValueAtTime(120, actx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(40, actx.currentTime+0.25);
-  g.gain.value=0.07; o.connect(g); g.connect(actx.destination);
-  o.start(); o.stop(actx.currentTime+0.28);
-}
-/* ========= SVG icons for categories ========= */
-const ICONS = {
-  "Pharaohs & Leaders": `<svg viewBox="0 0 64 64"><path d="M42 26c0 5.5-4.5 10-10 10s-10-4.5-10-10 4.5-10 10-10 10 4.5 10 10Z" fill="#e6c98e" stroke="#bfa06c" stroke-width="2"/><rect x="20" y="36" width="24" height="16" rx="4" fill="#f6e7c3" stroke="#bfa06c" stroke-width="2"/></svg>`,
-  "Gods & Beliefs": `<svg viewBox="0 0 64 64"><path d="M32 6v52M12 32h40" stroke="#bfa06c" stroke-width="4"/><circle cx="32" cy="20" r="8" fill="#f0d59a" stroke="#bfa06c" stroke-width="2"/></svg>`,
-  "Pyramids & Tombs": `<svg viewBox="0 0 64 64"><path d="M32 8L58 48H6Z" fill="#e8d09f" stroke="#bfa06c" stroke-width="2"/></svg>`,
-  "Ancient Egypt Facts": `<svg viewBox="0 0 64 64"><rect x="12" y="12" width="40" height="40" rx="6" fill="#f5e7c7" stroke="#bfa06c" stroke-width="2"/><path d="M20 24h24M20 34h24M20 44h18" stroke="#b78f55" stroke-width="2"/></svg>`
-};
-
-/* ========= Question Bank (from your worksheets) =========
-   Each item: { q, choices[], answer, cat, clue? }  */
 const BANK = [
-  // Pharaohs & Leaders (worksheet)
-  {q:"Which pharaoh was a female ruler who focused on trade instead of war?", choices:["Hatshepsut","Nefertiti","Cleopatra VII","Sobekneferu"], answer:0, cat:"Pharaohs & Leaders"},
-  {q:"Who was the young king whose tomb was found mostly untouched?", choices:["Akhenaten","Tutankhamun","Khufu","Djoser"], answer:1, cat:"Pharaohs & Leaders"},
-  {q:"Which pharaoh built the Great Pyramid at Giza?", choices:["Khufu (Cheops)","Sneferu","Pepi II","Ramses II"], answer:0, cat:"Pharaohs & Leaders"},
-  {q:"Who was known as Egypt’s first great engineer, helping design early pyramids?", choices:["Imhotep","Amenhotep III","Thutmose III","Narmer"], answer:0, cat:"Pharaohs & Leaders"},
-  {q:"Who expanded Egypt’s empire through conquest and war?", choices:["Thutmose III","Narmer","Djoser","Pepi II"], answer:0, cat:"Pharaohs & Leaders"},
-  {q:"Which pharaoh ruled for over 60 years and built more monuments than anyone else?", choices:["Ramses II","Khafre","Tutankhamun","Amenemhat I"], answer:0, cat:"Pharaohs & Leaders"},
-
-  // Gods & Beliefs (worksheet)
-  {q:"What did Amon-Re represent to the Egyptians?", choices:["The Sun","The Nile","War","Writing"], answer:0, cat:"Gods & Beliefs"},
-  {q:"What was Osiris the god of?", choices:["The Underworld and rebirth","The desert","The sky","Crafts"], answer:0, cat:"Gods & Beliefs"},
-  {q:"Which god was believed to weigh people’s hearts after they died?", choices:["Anubis","Horus","Ra","Ptah"], answer:0, cat:"Gods & Beliefs"},
-  {q:"What animal was sacred to Anubis?", choices:["Jackal","Cat","Ibis","Crocodile"], answer:0, cat:"Gods & Beliefs"},
-  {q:"Every pharaoh was thought to be which god in human form?", choices:["Horus","Set","Thoth","Ra"], answer:0, cat:"Gods & Beliefs"},
-
-  // Pyramids & Tombs (worksheet)
-  {q:"What was the main purpose of the pyramids?", choices:["Royal tombs / burials","Temples for living gods","Storage buildings","Houses"], answer:0, cat:"Pyramids & Tombs"},
-  {q:"What city is home to the Great Pyramid?", choices:["Giza","Memphis","Thebes","Saqqara"], answer:0, cat:"Pyramids & Tombs"},
-  {q:"What is the Valley of the Kings, and who was buried there?", choices:["A royal cemetery for New Kingdom pharaohs","A market for traders","A harbor on the Nile","A village for pyramid workers"], answer:0, cat:"Pyramids & Tombs"},
-  {q:"What structure stands in front of the Pyramid of Khafre?", choices:["The Great Sphinx","An obelisk","A lighthouse","A ziggurat"], answer:0, cat:"Pyramids & Tombs"},
-
-  // Bonus facts pulled from video sheet (to round out)
-  {q:"What is the name for the king or queen of ancient Egypt?", choices:["Pharaoh","Emperor","Caesar","Sultan"], answer:0, cat:"Ancient Egypt Facts"},
-  {q:"Egypt was originally divided into two kingdoms. What were they called?", choices:["Upper Egypt and Lower Egypt","North Egypt and South Egypt","East Egypt and West Egypt","Old Egypt and New Egypt"], answer:0, cat:"Ancient Egypt Facts"},
-  {q:"Which ruler was first to unite Upper and Lower Egypt?", choices:["Narmer (Menes)","Ramses II","Thutmose III","Khufu"], answer:0, cat:"Ancient Egypt Facts"},
-  {q:"When a pharaoh died, what process preserved the body before burial?", choices:["Mummification","Cremation","Freezing","Cloning"], answer:0, cat:"Ancient Egypt Facts"},
+  {q:"Which pharaoh united Upper and Lower Egypt?",choices:["Narmer (Menes)","Ramses II","Tutankhamun","Cleopatra"],answer:0,cat:"Pharaohs"},
+  {q:"Ramses II is famous for signing a peace treaty after which battle?",choices:["Kadesh","Giza","Karnak","Delta"],answer:0,cat:"Pharaohs"},
+  {q:"Which pharaoh built the Great Pyramid?",choices:["Khufu","Sneferu","Pepi II","Hatshepsut"],answer:0,cat:"Pharaohs"},
+  {q:"Anubis is god of…",choices:["Sun","Afterlife","War","Nile"],answer:1,cat:"Gods"},
+  {q:"Ra traveled across the sky in a…",choices:["Solar boat","Chariot","Cloud","Sphinx"],answer:0,cat:"Gods"},
+  {q:"What was placed in canopic jars?",choices:["Jewelry","Internal organs","Sand","Perfume"],answer:1,cat:"Gods"},
+  {q:"Egyptian civilization depended on which river?",choices:["Tigris","Euphrates","Nile","Jordan"],answer:2,cat:"Geography"},
+  {q:"The Rosetta Stone helped scholars…",choices:["Translate hieroglyphics","Build pyramids","Map the Nile","Invent papyrus"],answer:0,cat:"Geography"},
+  {q:"Which structure guards the pyramids?",choices:["Obelisk","Great Sphinx","Step Pyramid","Lighthouse"],answer:1,cat:"Geography"},
+  {q:"What material did Egyptians write on?",choices:["Papyrus","Clay","Silk","Parchment"],answer:0,cat:"Geography"}
 ];
-
-/* ========= Game settings ========= */
-const QUESTIONS_PER_RUN = 12;   // exhibits per walk
-const TIME_PER_Q = 45;          // seconds per exhibit
-
-/* ========= DOM refs ========= */
-const qIndex = document.getElementById('qIndex');
-const qTotal = document.getElementById('qTotal');
-const qTotal2 = document.getElementById('qTotal2');
-const qCat = document.getElementById('qCat');
-const qTime = document.getElementById('qTime');
-const path = document.getElementById('path');
-const promptEl = document.getElementById('prompt');
-const clueEl = document.getElementById('clue');
-const choicesEl = document.getElementById('choices');
-const label = document.getElementById('label');
-const labelText = document.getElementById('labelText');
-const nextBtn = document.getElementById('nextBtn');
-const skipBtn = document.getElementById('skipBtn');
-const quizCard = document.getElementById('quizCard');
-const endView = document.getElementById('end');
-const scoreOut = document.getElementById('scoreOut');
-const endTitle = document.getElementById('endTitle');
-const endMsg = document.getElementById('endMsg');
-const answerKey = document.getElementById('answerKey');
-
-let order = [];
-let idx = 0;
-let score = 0;
-let timeLeft = TIME_PER_Q;
-let timer = null;
-
-/* ========= Utils ========= */
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function sampleQuestions(){
-  const b = [...BANK];
-  shuffle(b);
-  return b.slice(0, QUESTIONS_PER_RUN);
-}
-function drawPath(){
-  path.innerHTML = '';
-  for(let i=0;i<QUESTIONS_PER_RUN;i++){
-    const s = document.createElement('div');
-    s.className = 'stone' + (i===0 ? ' active':'' );
-    s.setAttribute('aria-label',`Exhibit ${i+1}`);
-    path.appendChild(s);
-  }
-}
-function updateStones(){
-  const stones = [...document.querySelectorAll('.stone')];
-  stones.forEach((s,i)=>{
-    s.classList.remove('active');
-    if(i < idx) s.classList.add('done');
-  });
-  if(stones[idx]) stones[idx].classList.add('active');
-}
-function fillAnswerKey(){
-  answerKey.innerHTML = '';
-  order.forEach(q=>{
-    const li = document.createElement('li');
-    li.textContent = `${q.q} — ${q.choices[q.answer]} (${q.cat})`;
-    answerKey.appendChild(li);
-  });
-}
-
-/* ========= Game flow ========= */
-function start(){
-  qTotal.textContent = QUESTIONS_PER_RUN;
-  qTotal2.textContent = QUESTIONS_PER_RUN;
-  order = sampleQuestions();
-  fillAnswerKey();
-  idx=0; score=0; timeLeft = TIME_PER_Q;
-  quizCard.classList.remove('hidden'); endView.classList.add('hidden');
-  drawPath(); show();
-}
-function show(){
-  clearInterval(timer);
-  initAudio(); // ensures audio context exists after first interaction
-  const q = order[idx];
-  qIndex.textContent = idx+1;
-  qCat.textContent = q.cat;
-  qTime.textContent = timeLeft;
-  document.getElementById('label').innerHTML = ICONS[q.cat] + `<span id="labelText">Exhibit ${idx+1} — ${q.cat}</span>`;
-  promptEl.textContent = q.q;
-  clueEl.textContent = q.clue || '';
-  choicesEl.innerHTML = '';
-  const indexes = [0,1,2,3].slice(0, q.choices.length);
-  const display = indexes.map(i=>({i, text:q.choices[i]}));
-  shuffle(display).forEach(({i,text})=>{
-    const btn = document.createElement('button');
-    btn.className = 'choice';
-    btn.setAttribute('role','option');
-    btn.textContent = text;
-    btn.onclick = ()=> check(i, btn);
-    choicesEl.appendChild(btn);
-  });
-  nextBtn.classList.add('hidden');
-  skipBtn.disabled = false;
-  updateStones();
-  timer = setInterval(()=>{
-    timeLeft--;
-    qTime.textContent = timeLeft;
-    if(timeLeft<=0){ clearInterval(timer); lock(false); thud(); }
-  }, 1000);
-}
-function check(i, btn){
-  const q = order[idx];
-  const correct = (i === q.answer);
-  if(correct){ score++; btn.classList.add('correct'); chime(); }
-  else{ btn.classList.add('wrong'); thud(); }
-  lock(correct);
-}
-function lock(){
-  clearInterval(timer);
-  const q = order[idx];
-  [...document.querySelectorAll('.choice')].forEach(b=>{ b.disabled = true; if(b.textContent===q.choices[q.answer]) b.classList.add('correct'); });
-  nextBtn.classList.remove('hidden'); skipBtn.disabled = true;
-}
-function next(){
-  if(idx < QUESTIONS_PER_RUN-1){
-    idx++; timeLeft = TIME_PER_Q; show();
-  }else{
-    end();
-  }
-}
-function skip(){ next(); }
-function end(){
-  quizCard.classList.add('hidden');
-  endView.classList.remove('hidden');
-  scoreOut.textContent = score;
-  const pct = Math.round(100*score/QUESTIONS_PER_RUN);
-  if(score >= QUESTIONS_PER_RUN-2){ endTitle.textContent = "You reached the Tomb! 🏺"; endMsg.textContent = "Brilliant work—your museum notes paid off."; }
-  else if(score >= Math.ceil(QUESTIONS_PER_RUN*0.6)){ endTitle.textContent = "So close to the Tomb…"; endMsg.textContent = "A few more exhibits and you’ll make it!"; }
-  else{ endTitle.textContent = "The Tomb Remains Sealed…"; endMsg.textContent = "Take another walk and read the labels carefully."; }
-}
-function restart(){ start(); }
-
-/* ========= Wire up ========= */
-document.getElementById('nextBtn').addEventListener('click', next);
-document.getElementById('skipBtn').addEventListener('click', skip);
-document.body.addEventListener('click', initAudio, {once:true}); // first click enables audio
+let index=0,score=0,timeLeft=60,timer=null;
+const qIndex=document.getElementById("qIndex"),
+      qCat=document.getElementById("qCat"),
+      qTime=document.getElementById("qTime"),
+      prog=document.getElementById("doorProg"),
+      prompt=document.getElementById("prompt"),
+      clue=document.getElementById("clue"),
+      choices=document.getElementById("choices"),
+      nextBtn=document.getElementById("nextBtn"),
+      skipBtn=document.getElementById("skipBtn"),
+      end=document.getElementById("end"),
+      quiz=document.getElementById("quiz");
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const order=shuffle([...BANK]);
+function start(){index=0;score=0;prog.value=0;timeLeft=60;quiz.classList.remove("hidden");end.classList.add("hidden");show();}
+function show(){clearInterval(timer);const q=order[index];qIndex.textContent=index+1;qCat.textContent=q.cat;qTime.textContent=timeLeft;prompt.textContent=q.q;clue.textContent="";choices.innerHTML="";q.choices.forEach((c,i)=>{const b=document.createElement("button");b.className="choice";b.textContent=c;b.onclick=()=>check(i,b);choices.appendChild(b);});timer=setInterval(()=>{timeLeft--;qTime.textContent=timeLeft;if(timeLeft<=0){clearInterval(timer);lock();}},1000);nextBtn.classList.add("hidden");}
+function check(i,btn){const q=order[index];if(i===q.answer){score++;prog.value=score;btn.classList.add("correct");}else{btn.classList.add("wrong");}lock();}
+function lock(){clearInterval(timer);document.querySelectorAll(".choice").forEach(b=>b.disabled=true);document.querySelectorAll(".choice")[order[index].answer].classList.add("correct");nextBtn.classList.remove("hidden");}
+function next(){if(index<9){index++;timeLeft=60;show();}else{endGame();}}
+function skip(){next();}
+function endGame(){quiz.classList.add("hidden");end.classList.remove("hidden");document.getElementById("scoreOut").textContent=score;const title=score>=8?"You Escaped!":"Almost!";document.getElementById("endTitle").textContent=title;document.getElementById("endMsg").textContent=score>=8?"The gods are pleased.":"Try again to earn the gods’ favor.";}
+function restart(){start();}
+nextBtn.addEventListener("click",next);
+skipBtn.addEventListener("click",skip);
 start();
 </script>
 </body>
