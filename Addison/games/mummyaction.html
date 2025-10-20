@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mummy’s Path to Freedom — Animated Museum Map Edition</title>
+<style>
+:root{
+ --paper:#faf3e1;--paper2:#f3e8cb;--ink:#2a1e11;--sub:#6f5a3b;
+ --frame:#d6c79f;--card:#fffaf0;--accent:#bd8f2d;
+ --stone:#e7d7b3;--stoneB:#c7b48b;--stoneActive:#d6bf8e;--stoneActiveB:#a88a4a;
+ --stoneDone:#9fd0a7;--stoneDoneB:#2f905f;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+ margin:0;color:var(--ink);
+ background:radial-gradient(1200px 700px at 10% -10%,#fff9e7,#f5ebcf 45%,#ecdfc1 100%),var(--paper);
+ font-family:ui-sans-serif,system-ui,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+ display:flex;align-items:center;justify-content:center;padding:18px;
+}
+.app{width:min(1100px,100%);background:linear-gradient(180deg,var(--card),var(--paper2));
+ border:2px solid var(--frame);border-radius:18px;overflow:hidden;
+ box-shadow:0 10px 36px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.55);}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:14px 18px;border-bottom:2px solid var(--frame);background:linear-gradient(180deg,#fff5d8,#f4ebd0);}
+.logo{display:flex;align-items:center;gap:12px;font-weight:800}
+.logo svg{width:44px;height:44px}
+.subtitle{font-size:12px;color:var(--sub)}
+.hud{display:flex;gap:10px;flex-wrap:wrap}
+.pill{background:#fffdf5;border:1px solid var(--frame);border-radius:999px;padding:6px 11px;font-size:14px}
+main{padding:16px}
+.board{background:#fffef7;border:1px solid var(--frame);border-radius:14px;padding:10px;}
+.mapWrap{position:relative;width:100%;aspect-ratio:16/9;border:1px dashed #e3d5b6;border-radius:12px;
+ background:radial-gradient(800px 500px at 80% 0%,#fff7df,#f7edd3 50%,#efe2c3 100%);}
+svg.map{width:100%;height:100%;display:block}
+.mummy{position:absolute;width:60px;height:60px;pointer-events:none;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.bounce{animation:bounce .4s infinite ease-in-out;}
+.puff{position:absolute;width:20px;height:20px;background:rgba(180,160,120,.4);
+ border-radius:50%;filter:blur(3px);pointer-events:none;animation:puff 0.7s forwards ease-out;}
+@keyframes puff{0%{transform:scale(1);opacity:1;}100%{transform:scale(4);opacity:0;}}
+.glow{position:absolute;width:70px;height:70px;border-radius:50%;
+ box-shadow:0 0 20px 10px rgba(255,215,90,.6);animation:glowfade 1.4s forwards;}
+@keyframes glowfade{0%{opacity:1;}100%{opacity:0;}}
+.card{background:#fffef7;border:1px solid var(--frame);border-radius:14px;padding:16px;margin-top:12px}
+.prompt{font-weight:900;font-size:22px;margin:.45em 0 .2em}
+.choices{display:grid;gap:10px;margin-top:8px}
+@media(min-width:720px){.choices{grid-template-columns:1fr 1fr}}
+.choice{cursor:pointer;padding:12px 14px;border-radius:12px;background:#fffef9;border:1px solid var(--frame);transition:.15s}
+.choice.correct{background:#eef8f1;border-color:#2f905f;color:#14492b}
+.choice.wrong{background:#fdecec;border-color:#c96262;color:#6b1f1f}
+.foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;color:var(--sub);font-size:14px}
+button{background:linear-gradient(180deg,#f3d186,#e0bb67);color:#352400;border:1px solid #a9822d;
+ border-radius:10px;font-weight:800;padding:8px 12px;cursor:pointer}
+.hidden{display:none!important}
+.end{text-align:center;padding:30px 16px}
+details summary{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="logo">
+  <svg viewBox="0 0 64 64"><rect x="10" y="12" width="44" height="40" rx="6" fill="#f5e7c7" stroke="#bfa06c" stroke-width="2"/><path d="M16 20h32M16 28h32M16 36h26M16 44h18" stroke="#b78f55" stroke-width="2"/></svg>
+  <div><div>Mummy’s Path to Freedom</div><div class="subtitle">Museum Map — Animated Edition</div></div>
+ </div>
+ <div class="hud"><div class="pill">Step <span id="qIndex">1</span>/12</div><div class="pill">Lives: <span id="lives">3</span></div></div>
+</header>
+<main>
+<div class="board">
+ <div class="mapWrap">
+  <svg class="map" viewBox="0 0 1200 675" preserveAspectRatio="none">
+   <path id="travelPath" d="M100,580 C200,540 260,520 320,520 C420,520 480,540 560,500 C640,460 640,360 560,330 C460,290 360,300 300,260 C240,220 240,160 320,140 C420,115 540,150 640,180 C760,215 860,210 920,260 C1000,325 1000,420 920,480 C860,525 760,540 690,560 C600,585 520,600 460,610 C360,625 220,620 160,600" fill="none" stroke="transparent" stroke-width="2"/>
+   <g id="stones"></g>
+   <text x="100" y="610" font-size="28" fill="#6b5431" font-weight="700">START</text>
+   <text x="900" y="585" font-size="28" fill="#6b5431" font-weight="700">FINISH</text>
+  </svg>
+  <svg id="mummy" class="mummy" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="40" rx="14" ry="12" fill="#f7f0dc" stroke="#c9b89a" stroke-width="2"/>
+    <circle cx="32" cy="25" r="10" fill="#f7f0dc" stroke="#c9b89a" stroke-width="2"/>
+    <path d="M22 23h20M20 27h24M22 31h20M20 36h24M22 41h20" stroke="#d8cdb4" stroke-width="3"/>
+    <circle cx="28" cy="23" r="2.6" fill="#3e2d16"/><circle cx="36" cy="23" r="2.6" fill="#3e2d16"/>
+    <path d="M28 28 Q32 31 36 28" stroke="#3e2d16" stroke-width="2" fill="none"/>
+  </svg>
+ </div>
+</div>
+<div class="card" id="quizCard">
+ <h2 class="prompt" id="prompt">Loading...</h2>
+ <div class="choices" id="choices"></div>
+ <div class="foot"><span>Correct = move forward. Wrong = lose a life.</span><button id="nextBtn" class="hidden">Next</button></div>
+</div>
+<div class="end hidden" id="end">
+ <h2 id="endTitle"></h2><p id="endMsg"></p><button onclick="start()">Play Again</button>
+</div>
+</main>
+</div>
+<script>
+const travelPath=document.getElementById('travelPath');
+const stones=document.getElementById('stones');
+const mummy=document.getElementById('mummy');
+const promptEl=document.getElementById('prompt');
+const choicesEl=document.getElementById('choices');
+const qIndex=document.getElementById('qIndex');
+const livesEl=document.getElementById('lives');
+const nextBtn=document.getElementById('nextBtn');
+const endView=document.getElementById('end'), endTitle=document.getElementById('endTitle'), endMsg=document.getElementById('endMsg');
+let actx=null;function audio(){if(!actx)actx=new(AudioContext||webkitAudioContext)();}
+function tone(f=880,d=.1,t="sine"){if(!actx)return;let o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}
+function chime(){tone(1046,.14);setTimeout(()=>tone(1318,.14),100);}
+function thud(){tone(120,.2,"square");}
+function step(){tone(300,.05,"square");}
+const BANK=[{q:"Which pharaoh built the Great Pyramid?",choices:["Khufu","Ramses","Narmer","Imhotep"],a:0},
+{q:"What did Amon-Re represent?",choices:["The Sun","War","Fertility","Water"],a:0},
+{q:"Who designed the Step Pyramid?",choices:["Imhotep","Tut","Seti","Khafre"],a:0},
+{q:"What animal was sacred to Anubis?",choices:["Jackal","Cat","Hawk","Bull"],a:0},
+{q:"Who was the god of the underworld?",choices:["Osiris","Ra","Thoth","Ptah"],a:0},
+{q:"Which ruler united Upper and Lower Egypt?",choices:["Narmer","Ramses","Thutmose","Djoser"],a:0},
+{q:"Where is the Great Pyramid located?",choices:["Giza","Thebes","Saqqara","Abydos"],a:0},
+{q:"Process used to preserve bodies?",choices:["Mummification","Cremation","Freezing","Cloning"],a:0},
+{q:"Who was a female pharaoh focused on trade?",choices:["Hatshepsut","Nefertiti","Cleopatra","Taweret"],a:0},
+{q:"Which god weighed hearts?",choices:["Anubis","Horus","Ra","Sobek"],a:0},
+{q:"Every pharaoh was thought to be what god?",choices:["Horus","Set","Thoth","Ra"],a:0},
+{q:"Structure in front of Khafre’s pyramid?",choices:["The Great Sphinx","Ankh","Obelisk","Statue"],a:0}];
+let order=[],i=0,score=0,lives=3;
+function pathLen(){return travelPath.getTotalLength();}
+function ptAt(r){return travelPath.getPointAtLength(r);}
+function coord(step){const l=pathLen(),seg=l*(step/(12-1));return ptAt(seg);}
+function drawStones(){stones.innerHTML="";for(let s=0;s<12;s++){const p=coord(s);
+ let c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+ c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",18);
+ c.setAttribute("fill",s==0?"#d6bf8e":"#e7d7b3");c.setAttribute("stroke","#a88a4a");c.setAttribute("stroke-width",3);
+ stones.appendChild(c);} }
+function placeMummy(step){const p=coord(step);const wrap=document.querySelector(".mapWrap").getBoundingClientRect();
+ const x=(p.x/1200)*wrap.width-30,y=(p.y/675)*wrap.height-60;mummy.style.transform=`translate(${x}px,${y}px)`;}
+function animateMummy(from,to,cb){const len=pathLen(),start=len*(from/(12-1)),end=len*(to/(12-1));
+ const wrap=document.querySelector(".mapWrap").getBoundingClientRect();let t0=null;
+ const puff=document.createElement("div");puff.className="puff";document.body.appendChild(puff);
+ requestAnimationFrame(function anim(t){if(!t0)t0=t;const p=Math.min((t-t0)/1000,1);
+ const l=start+(end-start)*p,pt=travelPath.getPointAtLength(l);
+ const x=(pt.x/1200)*wrap.width-30,y=(pt.y/675)*wrap.height-60;
+ mummy.style.transform=`translate(${x}px,${y}px)`;if(p<1)requestAnimationFrame(anim);else{puff.remove();cb&&cb();}});
+ const pos=mummy.getBoundingClientRect();puff.style.left=pos.left+25+"px";puff.style.top=pos.top+55+"px";}
+function show(){audio();const q=order[i];qIndex.textContent=i+1;promptEl.textContent=q.q;choicesEl.innerHTML="";
+ q.choices.forEach((c,idx)=>{const b=document.createElement("button");b.className="choice";b.textContent=c;
+ b.onclick=()=>check(idx,b);choicesEl.appendChild(b);});nextBtn.classList.add("hidden");}
+function check(sel,btn){const q=order[i];const ok=sel==q.a;document.querySelectorAll(".choice").forEach(b=>b.disabled=true);
+ if(ok){btn.classList.add("correct");score++;step();mummy.classList.add("bounce");
+ animateMummy(i,i+1,()=>{mummy.classList.remove("bounce");if(i==11){finish();}else{nextBtn.classList.remove("hidden");}});}
+ else{btn.classList.add("wrong");thud();lives--;livesEl.textContent=lives;if(lives<=0){finish();}else nextBtn.classList.remove("hidden");}}
+function finish(){endView.classList.remove("hidden");document.getElementById("quizCard").classList.add("hidden");
+ if(lives>0){chime();const g=document.createElement("div");g.className="glow";document.body.appendChild(g);setTimeout(()=>g.remove(),1400);
+ endTitle.textContent="You Escaped!";endMsg.textContent=`Score ${score}/12`; }else{endTitle.textContent="The Tomb Closed...";endMsg.textContent="Try again.";} }
+function start(){drawStones();order=[...BANK];i=0;score=0;lives=3;livesEl.textContent=lives;
+ document.getElementById("quizCard").classList.remove("hidden");endView.classList.add("hidden");placeMummy(0);show();}
+nextBtn.onclick=function(){i++;if(i<12)show();else finish();};
+document.body.addEventListener("click",audio,{once:true});
+window.addEventListener("resize",()=>placeMummy(i));
+setTimeout(()=>{start();},50);
+</script>
+</body>
+</html>
