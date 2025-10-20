@@ -1,1 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Escape the Tomb: The Pharaoh’s Challenge</title>
+<style>
+  :root {
+    --bg: #1a1420;
+    --card: #251d2e;
+    --accent: #f0c75e;
+    --good: #6fe0a1;
+    --bad: #ff6c7a;
+    --text: #fdfaf4;
+    --subtext: #d0c8c0;
+    --border: #3a2f43;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  .app {
+    width: min(900px, 100%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+  header {
+    background: #1d1622;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo svg {
+    width: 32px;
+    height: 32px;
+  }
+  .badge {
+    font-size: 0.8em;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .hud {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 0.9em;
+  }
+  .pill {
+    background: #352a40;
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+  main {
+    padding: 20px;
+  }
+  .card {
+    background: #2d2436;
+    border-radius: 12px;
+    padding: 20px;
+  }
+  progress {
+    width: 100%;
+    height: 14px;
+    border-radius: 7px;
+    background: #3b2e45;
+  }
+  progress::-webkit-progress-bar {
+    background: #3b2e45;
+  }
+  progress::-webkit-progress-value {
+    background: linear-gradient(90deg, var(--accent), #cfa03a);
+    border-radius: 7px;
+  }
+  .grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  @media (min-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .choice {
+    padding: 12px 14px;
+    background: #3a2f46;
+    border: 1px solid #4b3b57;
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .choice:hover {
+    background: #4b3b57;
+  }
+  .choice.correct {
+    background: #254a38;
+    border-color: var(--good);
+  }
+  .choice.wrong {
+    background: #552a33;
+    border-color: var(--bad);
+  }
+  button {
+    background: var(--accent);
+    color: #231900;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .foot {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    color: var(--subtext);
+  }
+  .hidden {
+    display: none !important;
+  }
+  .end {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .end h2 {
+    color: var(--accent);
+  }
+  .muted {
+    color: var(--subtext);
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="20" r="10" fill="#f0c75e" />
+          <ellipse cx="32" cy="40" rx="12" ry="10" fill="#58c2d6" />
+        </svg>
+        Escape the Tomb
+        <div class="badge">The Pharaoh’s Challenge</div>
+      </div>
+      <div class="hud">
+        <div class="pill">Question: <strong id="qIndex">1</strong>/10</div>
+        <div class="pill">Category: <strong id="qCat">–</strong></div>
+        <div class="pill">Timer: <strong id="qTime">60</strong>s</div>
+      </div>
+    </header>
+    <main>
+      <div class="card" id="quiz">
+        <p><strong>Goal:</strong> Answer 10 questions to unlock the tomb doors before time runs out.</p>
+        <progress id="doorProg" value="0" max="10"></progress>
+        <h2 id="prompt">Loading…</h2>
+        <div class="muted" id="clue"></div>
+        <div class="grid" id="choices"></div>
+        <div class="foot">
+          <span>Each correct answer unlocks a chamber door.</span>
+          <div>
+            <button id="skipBtn">Skip</button>
+            <button id="nextBtn" class="hidden">Next</button>
+          </div>
+        </div>
+      </div>
+      <div class="end hidden" id="end">
+        <h2 id="endTitle"></h2>
+        <p id="endMsg"></p>
+        <p><strong>Score:</strong> <span id="scoreOut">0</span>/10</p>
+        <button onclick="restart()">Play Again</button>
+      </div>
+    </main>
+  </div>
 
+<script>
+const BANK = [
+  {q:"Which pharaoh united Upper and Lower Egypt?",choices:["Narmer (Menes)","Ramses II","Tutankhamun","Cleopatra"],answer:0,cat:"Pharaohs"},
+  {q:"Ramses II is famous for signing a peace treaty after which battle?",choices:["Kadesh","Giza","Karnak","Delta"],answer:0,cat:"Pharaohs"},
+  {q:"Which pharaoh built the Great Pyramid?",choices:["Khufu","Sneferu","Pepi II","Hatshepsut"],answer:0,cat:"Pharaohs"},
+  {q:"Anubis is god of…",choices:["Sun","Afterlife","War","Nile"],answer:1,cat:"Gods"},
+  {q:"Ra traveled across the sky in a…",choices:["Solar boat","Chariot","Cloud","Sphinx"],answer:0,cat:"Gods"},
+  {q:"What was placed in canopic jars?",choices:["Jewelry","Internal organs","Sand","Perfume"],answer:1,cat:"Gods"},
+  {q:"Egyptian civilization depended on which river?",choices:["Tigris","Euphrates","Nile","Jordan"],answer:2,cat:"Geography"},
+  {q:"The Rosetta Stone helped scholars…",choices:["Translate hieroglyphics","Build pyramids","Map the Nile","Invent papyrus"],answer:0,cat:"Geography"},
+  {q:"Which structure guards the pyramids?",choices:["Obelisk","Great Sphinx","Step Pyramid","Lighthouse"],answer:1,cat:"Geography"},
+  {q:"What material did Egyptians write on?",choices:["Papyrus","Clay","Silk","Parchment"],answer:0,cat:"Geography"}
+];
+let index=0,score=0,timeLeft=60,timer=null;
+const qIndex=document.getElementById("qIndex"),
+      qCat=document.getElementById("qCat"),
+      qTime=document.getElementById("qTime"),
+      prog=document.getElementById("doorProg"),
+      prompt=document.getElementById("prompt"),
+      clue=document.getElementById("clue"),
+      choices=document.getElementById("choices"),
+      nextBtn=document.getElementById("nextBtn"),
+      skipBtn=document.getElementById("skipBtn"),
+      end=document.getElementById("end"),
+      quiz=document.getElementById("quiz");
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const order=shuffle([...BANK]);
+function start(){index=0;score=0;prog.value=0;timeLeft=60;quiz.classList.remove("hidden");end.classList.add("hidden");show();}
+function show(){clearInterval(timer);const q=order[index];qIndex.textContent=index+1;qCat.textContent=q.cat;qTime.textContent=timeLeft;prompt.textContent=q.q;clue.textContent="";choices.innerHTML="";q.choices.forEach((c,i)=>{const b=document.createElement("button");b.className="choice";b.textContent=c;b.onclick=()=>check(i,b);choices.appendChild(b);});timer=setInterval(()=>{timeLeft--;qTime.textContent=timeLeft;if(timeLeft<=0){clearInterval(timer);lock();}},1000);nextBtn.classList.add("hidden");}
+function check(i,btn){const q=order[index];if(i===q.answer){score++;prog.value=score;btn.classList.add("correct");}else{btn.classList.add("wrong");}lock();}
+function lock(){clearInterval(timer);document.querySelectorAll(".choice").forEach(b=>b.disabled=true);document.querySelectorAll(".choice")[order[index].answer].classList.add("correct");nextBtn.classList.remove("hidden");}
+function next(){if(index<9){index++;timeLeft=60;show();}else{endGame();}}
+function skip(){next();}
+function endGame(){quiz.classList.add("hidden");end.classList.remove("hidden");document.getElementById("scoreOut").textContent=score;const title=score>=8?"You Escaped!":"Almost!";document.getElementById("endTitle").textContent=title;document.getElementById("endMsg").textContent=score>=8?"The gods are pleased.":"Try again to earn the gods’ favor.";}
+function restart(){start();}
+nextBtn.addEventListener("click",next);
+skipBtn.addEventListener("click",skip);
+start();
+</script>
+</body>
+</html>
