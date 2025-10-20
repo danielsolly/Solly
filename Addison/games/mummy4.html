@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mummy’s Desert Escape — Storybook Animated</title>
+<style>
+:root{
+  --paper:#fff6e6; --paper2:#f7e9c8; --ink:#2b2113; --sub:#6f5a3b;
+  --frame:#d7c9a4; --card:#fffaf0; --accent:#bd8f2d;
+  --sand1:#ffe6b8; --sand2:#f7d9a0; --sand3:#f0c780;
+  --pathEdge:#9b7a45; --path:#caa068; --pathGlow:#f6c95b;
+  --stone:#e8d5ad; --stoneB:#b69056; --stoneActive:#e6c27b; --stoneDone:#9fd0a7;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;color:var(--ink);
+  background:radial-gradient(1200px 700px at 10% -10%,#fff9e7,#f5ebcf 45%,#ecdfc1 100%),var(--paper);
+  font-family: "Gill Sans", ui-rounded, system-ui, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  line-height:1.55; display:flex; align-items:center; justify-content:center; padding:18px;
+}
+.app{
+  width:min(1120px,100%); background:linear-gradient(180deg,var(--card),var(--paper2));
+  border:2px solid var(--frame); border-radius:18px; overflow:hidden;
+  box-shadow:0 10px 36px rgba(0,0,0,.16), inset 0 0 0 1px rgba(255,255,255,.55);
+}
+header{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:14px 18px; border-bottom:2px solid var(--frame);
+  background:linear-gradient(180deg,#fff5d8,#f4ebd0);
+}
+.logo{display:flex; align-items:center; gap:12px; font-weight:900}
+.logo svg{width:44px;height:44px}
+.subtitle{font-size:13px; color:var(--sub)}
+.hud{display:flex; gap:10px; flex-wrap:wrap}
+.pill{background:#fffdf5;border:1px solid var(--frame);border-radius:999px;padding:6px 11px;font-size:14px}
+.pill-btn{cursor:pointer}
+main{padding:16px}
+
+/* Board */
+.board{background:#fffef7; border:1px solid var(--frame); border-radius:14px; padding:10px;}
+.mapWrap{position:relative; width:100%; aspect-ratio:16/9; border:1px dashed #e3d5b6; border-radius:12px;
+  background:linear-gradient(180deg,#cfeaff 0%, #fff7de 45%, #f7e2b4 100%); overflow:hidden;}
+svg.map{width:100%; height:100%; display:block}
+
+/* Tokens */
+.token{position:absolute; width:64px; height:64px; pointer-events:none; will-change:transform;}
+/* Wrapped animated mummy */
+.runBounce{animation:mBounce .45s infinite ease-in-out;}
+@keyframes mBounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.armL,.armR{transform-box:fill-box; transform-origin: 50% 0%;}
+.runArms .armL{animation:swing .45s infinite ease-in-out}
+.runArms .armR{animation:swingR .45s infinite ease-in-out}
+@keyframes swing {0%,100%{transform:rotate(12deg)}50%{transform:rotate(-8deg)}}
+@keyframes swingR {0%,100%{transform:rotate(-12deg)}50%{transform:rotate(8deg)}}
+.faceBlink{animation:blink 4s infinite}
+@keyframes blink {0%,98%,100%{opacity:1}99%{opacity:.15}}
+/* Dusty storm */
+.storm{opacity:.9; filter:contrast(1.05) blur(.4px); }
+@keyframes breathe {0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.stormPulse{animation:breathe 1.2s infinite ease-in-out;}
+/* Effects */
+.puff{position:absolute; width:20px; height:20px; background:rgba(195,170,120,.46);
+  border-radius:50%; filter:blur(2px); pointer-events:none; animation:puff .6s forwards ease-out;}
+@keyframes puff{0%{transform:scale(1);opacity:1}100%{transform:scale(4);opacity:0}}
+.glow{position:absolute; width:90px; height:90px; border-radius:50%;
+  box-shadow:0 0 30px 18px rgba(255,215,90,.65); animation:glowfade 1.4s forwards;}
+@keyframes glowfade{0%{opacity:1}100%{opacity:0}}
+/* Fact bubble */
+.bubble{
+  position:absolute; max-width:280px; background:#fff6d8; border:2px solid #e1cc8a; padding:8px 10px;
+  border-radius:10px; color:#5a4522; font-size:14px; box-shadow:0 6px 14px rgba(0,0,0,.12);
+  animation:pop .25s ease-out; pointer-events:none;
+}
+@keyframes pop{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.bubble::after{
+  content:""; position:absolute; left:18px; bottom:-8px; width:12px; height:12px; background:#fff6d8; border-left:2px solid #e1cc8a; border-bottom:2px solid #e1cc8a; transform:rotate(45deg);
+}
+
+/* Quiz */
+.card{background:#fffef7;border:1px solid var(--frame);border-radius:14px;padding:16px;margin-top:12px}
+.prompt{font-weight:900; font-size:22px; margin:.45em 0 .2em}
+.choices{display:grid; gap:10px; margin-top:8px}
+@media (min-width:720px){ .choices{ grid-template-columns:1fr 1fr } }
+.choice{ cursor:pointer; padding:12px 14px; border-radius:12px; background:#fffef9; border:1px solid var(--frame); transition:.15s; font-weight:700 }
+.choice:hover{ transform:translateY(-1px); box-shadow:0 2px 0 #eadbbb }
+.choice.correct{ background:#eef8f1; border-color:#2f905f; color:#14492b }
+.choice.wrong{ background:#fdecec; border-color:#c96262; color:#6b1f1f }
+.foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px; color:var(--sub); font-size:14px}
+button{ background:linear-gradient(180deg,#f3d186,#e0bb67); color:#352400; border:1px solid #a9822d; border-radius:10px; font-weight:800; padding:8px 12px; cursor:pointer }
+.hidden{ display:none !important }
+.end{ text-align:center; padding:30px 16px }
+details summary{ cursor:pointer }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 64 64"><rect x="10" y="12" width="44" height="40" rx="6" fill="#f5e7c7" stroke="#bfa06c" stroke-width="2"/><path d="M16 20h32M16 28h32M16 36h26M16 44h18" stroke="#b78f55" stroke-width="2"/></svg>
+      <div>
+        <div style="font-size:20px;">Mummy’s Desert Escape</div>
+        <div class="subtitle">Run along the dunes to the Sun Gate — don’t let the sandstorm catch you!</div>
+      </div>
+    </div>
+    <div class="hud" aria-live="polite">
+      <div class="pill">Step <strong id="stepNum">1</strong>/12</div>
+      <div class="pill">Storm Gap: <strong id="gap">Safe</strong></div>
+      <div id="muteBtn" class="pill pill-btn" title="Toggle sound">🔈</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="board">
+      <div class="mapWrap" id="mapWrap">
+        <!-- Desert map -->
+        <svg class="map" viewBox="0 0 1200 675" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="dune" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="var(--sand1)"/><stop offset="1" stop-color="var(--sand2)"/>
+            </linearGradient>
+          </defs>
+          <!-- dunes / sky layers -->
+          <path d="M0 260 C200 220 420 280 600 260 C800 240 1000 290 1200 260 L1200 675 L0 675 Z" fill="var(--sand1)" opacity=".55"/>
+          <path d="M0 330 C160 300 420 360 620 340 C820 320 1000 370 1200 330 L1200 675 L0 675 Z" fill="url(#dune)" />
+          <!-- pyramids -->
+          <g opacity=".95">
+            <path d="M180 480 L300 630 L60 630 Z" fill="#dfbd77" stroke="#b08a4d" stroke-width="3"/>
+            <path d="M380 480 L520 630 L240 630 Z" fill="#e4c27f" stroke="#b08a4d" stroke-width="3"/>
+          </g>
+          <!-- palms -->
+          <g opacity=".95">
+            <rect x="980" y="520" width="12" height="70" fill="#9a6a2e" />
+            <path d="M986 510 c 38 -36 78 -10 0 0 M986 510 c -38 -36 -78 -10 0 0 M986 510 c 38 -10 78 20 0 0 M986 510 c -38 -10 -78 20 0 0"
+                  stroke="#408f4a" stroke-width="8" fill="none" />
+          </g>
+          <!-- sun + shimmer -->
+          <g opacity=".9">
+            <circle cx="1060" cy="90" r="60" fill="#ffd56b"/>
+            <circle cx="1060" cy="90" r="95" fill="#ffd56b" opacity=".25">
+              <animate attributeName="opacity" values=".15;.28;.15" dur="6s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+
+          <!-- PATH (edge + body + progress glow) -->
+          <path id="travelPath"
+            d="M80,600
+               C 220,560 320,540 380,520
+               C 520,470 600,440 640,380
+               C 690,312 650,260 580,240
+               C 520,225 470,220 430,200
+               C 360,168 360,120 440,110
+               C 560,95 700,150 820,200
+               C 930,245 1020,300 1040,380
+               C 1060,460 1000,520 900,560
+               C 800,600 680,620 560,635
+               C 420,650 260,645 160,630"
+            fill="none" stroke="var(--pathEdge)" stroke-width="9" stroke-linecap="round" opacity=".35"/>
+          <path id="pathBody"
+            d="M80,600
+               C 220,560 320,540 380,520
+               C 520,470 600,440 640,380
+               C 690,312 650,260 580,240
+               C 520,225 470,220 430,200
+               C 360,168 360,120 440,110
+               C 560,95 700,150 820,200
+               C 930,245 1020,300 1040,380
+               C 1060,460 1000,520 900,560
+               C 800,600 680,620 560,635
+               C 420,650 260,645 160,630"
+            fill="none" stroke="var(--path)" stroke-width="5" stroke-linecap="round"/>
+          <path id="progress" d="" fill="none" stroke="var(--pathGlow)" stroke-width="7" stroke-linecap="round" opacity=".85"/>
+
+          <!-- numbered stones -->
+          <g id="stones"></g>
+
+          <!-- labels -->
+          <g font-family="Georgia,serif" font-weight="700" fill="#6b5431">
+            <text x="80" y="635" font-size="28">START</text>
+            <text x="900" y="585" font-size="28">SUN GATE</text>
+          </g>
+        </svg>
+
+        <!-- WRAPPED CARTOON MUMMY -->
+        <svg id="mummy" class="token" viewBox="0 0 64 64" aria-label="Mummy">
+          <ellipse cx="32" cy="58" rx="15" ry="5" fill="rgba(0,0,0,.08)"/>
+          <!-- body -->
+          <ellipse cx="32" cy="40" rx="14" ry="12" fill="#f9f4df" stroke="#c9b89a" stroke-width="2"/>
+          <circle cx="32" cy="25" r="10" fill="#f9f4df" stroke="#c9b89a" stroke-width="2"/>
+          <!-- wraps -->
+          <path d="M22 23h20M20 27h24M22 31h20M20 36h24M22 41h20" stroke="#e5dcc6" stroke-width="3"/>
+          <!-- arms -->
+          <g class="armL"><path d="M18 38 q8 -4 10 2" stroke="#c9b89a" stroke-width="2" fill="none"/></g>
+          <g class="armR"><path d="M46 38 q-8 -4 -10 2" stroke="#c9b89a" stroke-width="2" fill="none"/></g>
+          <!-- eyes + smile -->
+          <g class="faceBlink"><circle cx="28" cy="23" r="2.4" fill="#3e2d16"/><circle cx="36" cy="23" r="2.4" fill="#3e2d16"/></g>
+          <path d="M27 29 Q32 32 37 29" stroke="#3e2d16" stroke-width="2" fill="none"/>
+        </svg>
+
+        <!-- DUSTY SANDSTORM -->
+        <svg id="storm" class="token storm stormPulse" viewBox="0 0 64 64" aria-label="Sandstorm">
+          <defs>
+            <linearGradient id="sand" x1="0" x2="1"><stop offset="0" stop-color="#ead6aa"/><stop offset="1" stop-color="#d7bc86"/></linearGradient>
+          </defs>
+          <g opacity=".92">
+            <ellipse cx="32" cy="36" rx="20" ry="12" fill="url(#sand)"/>
+            <ellipse cx="28" cy="30" rx="16" ry="10" fill="url(#sand)"/>
+            <ellipse cx="36" cy="26" rx="14" ry="8" fill="url(#sand)"/>
+            <ellipse cx="32" cy="22" rx="12" ry="6" fill="url(#sand)"/>
+          </g>
+        </svg>
+
+        <!-- Fact bubble container -->
+        <div id="bubble" class="bubble" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="prompt" id="prompt">Loading…</h2>
+      <div class="choices" id="choices"></div>
+      <div class="foot">
+        <span>✅ Correct = run forward • ❌ Wrong = storm closes in</span>
+        <button id="nextBtn" class="hidden">Next</button>
+      </div>
+    </div>
+
+    <div class="end hidden" id="end">
+      <h2 id="endTitle"></h2>
+      <p id="endMsg"></p>
+      <button onclick="start()">Play Again</button>
+    </div>
+
+    <details style="margin-top:10px">
+      <summary>Answer Key (teacher)</summary>
+      <ol id="answerKey"></ol>
+    </details>
+  </main>
+</div>
+
+<script>
+/* ========== minimal sounds ========== */
+let MUTED=false; const AC=window.AudioContext||window.webkitAudioContext; let actx=null;
+function audio(){ if(!actx) actx=new AC(); }
+function tone(f=880,d=.12,t="sine",g=.05){ if(MUTED||!actx)return; const o=actx.createOscillator(),G=actx.createGain(); o.type=t;o.frequency.value=f;G.gain.value=g;o.connect(G);G.connect(actx.destination);o.start();o.stop(actx.currentTime+d); }
+function chime(){ tone(1046,.12); setTimeout(()=>tone(1318,.12),100); }
+function thud(){ tone(140,.22,"triangle",.07); }
+function step(){ tone(320,.05,"square",.03); }
+document.getElementById('muteBtn').onclick=()=>{MUTED=!MUTED; document.getElementById('muteBtn').textContent=MUTED?"🔇":"🔈";};
+
+/* ========== DOM ========== */
+const pathEl=document.getElementById('travelPath');
+const pathBody=document.getElementById('pathBody');
+const progressPath=document.getElementById('progress');
+const stonesEl=document.getElementById('stones');
+const wrapEl=document.getElementById('mapWrap');
+const mummy=document.getElementById('mummy');
+const storm=document.getElementById('storm');
+const bubble=document.getElementById('bubble');
+const stepNum=document.getElementById('stepNum');
+const gapEl=document.getElementById('gap');
+const promptEl=document.getElementById('prompt');
+const choicesEl=document.getElementById('choices');
+const nextBtn=document.getElementById('nextBtn');
+const endView=document.getElementById('end');
+const endTitle=document.getElementById('endTitle');
+const endMsg=document.getElementById('endMsg');
+const answerKey=document.getElementById('answerKey');
+
+/* ========== Questions (worksheet-aligned) ========== */
+const BANK=[
+  {q:"Which pharaoh was a female ruler who focused on trade instead of war?", c:["Hatshepsut","Nefertiti","Cleopatra VII","Sobekneferu"], a:0, f:"She traded with Punt and built great temples."},
+  {q:"Who was the young king whose tomb was found mostly untouched?", c:["Akhenaten","Tutankhamun","Khufu","Djoser"], a:1, f:"His hidden tomb preserved treasures for 3,000+ years."},
+  {q:"Which pharaoh built the Great Pyramid at Giza?", c:["Khufu (Cheops)","Sneferu","Pepi II","Ramses II"], a:0, f:"It was the tallest structure on Earth for ~3,800 years."},
+  {q:"Who was known as Egypt’s first great engineer, helping design early pyramids?", c:["Imhotep","Amenhotep III","Thutmose III","Narmer"], a:0, f:"Imhotep designed Djoser’s Step Pyramid."},
+  {q:"Who expanded Egypt’s empire through conquest and war?", c:["Thutmose III","Narmer","Djoser","Pepi II"], a:0, f:"He led many successful campaigns."},
+  {q:"What did Amon-Re represent to the Egyptians?", c:["The Sun","The Nile","War","Writing"], a:0, f:"A powerful state god, especially at Thebes."},
+  {q:"What was Osiris the god of?", c:["The Underworld and rebirth","The desert","The sky","Crafts"], a:0, f:"He ruled the afterlife and symbolized renewal."},
+  {q:"Which god was believed to weigh people’s hearts after they died?", c:["Anubis","Horus","Ra","Ptah"], a:0, f:"He checked if hearts were lighter than a feather."},
+  {q:"What animal was sacred to Anubis?", c:["Jackal","Cat","Ibis","Crocodile"], a:0, f:"Priests wore jackal masks during mummification."},
+  {q:"Every pharaoh was thought to be which god in human form?", c:["Horus","Set","Thoth","Ra"], a:0, f:"Falcon god and protector of kingship."},
+  {q:"What city is home to the Great Pyramid?", c:["Giza","Memphis","Thebes","Saqqara"], a:0, f:"The plateau also holds the Great Sphinx."},
+  {q:"When a pharaoh died, what process preserved the body before burial?", c:["Mummification","Cremation","Freezing","Cloning"], a:0, f:"It took ~70 days using natron salts."},
+  {q:"Which ruler was first to unite Upper and Lower Egypt?", c:["Narmer (Menes)","Ramses II","Thutmose III","Khufu"], a:0, f:"Shown on the Narmer Palette joining the kingdoms."},
+  {q:"What structure stands in front of the Pyramid of Khafre?", c:["The Great Sphinx","An obelisk","A lighthouse","A ziggurat"], a:0, f:"A lion body with a human head, likely Khafre’s."},
+];
+
+/* ========== Game state ========== */
+const STEPS=12, MOVE_MS=950, STORM_MS=820;
+let order=[], iStep=0, stormStep=-2, score=0;
+
+/* ========== Helpers ========== */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function pathLen(){ return pathEl.getTotalLength(); }
+function pointAtStep(step){ const L=pathLen(); const seg=L*(step/(STEPS-1)); return pathEl.getPointAtLength(seg); }
+function placeToken(el, step, yOff=60){
+  const wrap=wrapEl.getBoundingClientRect(); const p=pointAtStep(step);
+  const x=(p.x/1200)*wrap.width-32, y=(p.y/675)*wrap.height-yOff;
+  el.style.transform=`translate(${x}px,${y}px)`;
+}
+function drawStones(){
+  stonesEl.innerHTML='';
+  for(let s=0;s<STEPS;s++){
+    const p=pointAtStep(s);
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',18);
+    c.setAttribute('fill', s===0? "var(--stoneActive)" : "var(--stone)");
+    c.setAttribute('stroke',"var(--stoneB)"); c.setAttribute('stroke-width','3');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',p.x); t.setAttribute('y',p.y+6); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-family','Georgia,serif'); t.setAttribute('font-weight','700'); t.setAttribute('fill','#6b5431'); t.setAttribute('font-size','16'); t.textContent=s+1;
+    g.appendChild(c); g.appendChild(t); stonesEl.appendChild(g);
+  }
+}
+function colorStones(){
+  const cs=stonesEl.querySelectorAll('circle');
+  cs.forEach((c,s)=>{
+    if(s<iStep) c.setAttribute('fill',"var(--stoneDone)");
+    else if(s===iStep) c.setAttribute('fill',"var(--stoneActive)");
+    else c.setAttribute('fill',"var(--stone)");
+  });
+}
+/* golden progress stroke up to current step */
+function updateProgress(){
+  const d=pathBody.getAttribute('d'); progressPath.setAttribute('d', d);
+  const L=pathLen(); const seg=L*(iStep/(STEPS-1));
+  progressPath.setAttribute('stroke-dasharray', `${seg} ${L}`);
+  progressPath.setAttribute('stroke-dashoffset', 0);
+}
+function puffAt(el){
+  const r=el.getBoundingClientRect();
+  const d=document.createElement('div'); d.className='puff';
+  d.style.left=(r.left+r.width/2-10)+'px'; d.style.top=(r.top+r.height-6)+'px';
+  document.body.appendChild(d); setTimeout(()=>d.remove(),600);
+}
+function showBubble(text){
+  const r=mummy.getBoundingClientRect();
+  bubble.style.left=(r.left-10)+'px';
+  bubble.style.top=(r.top-70)+'px';
+  bubble.innerHTML='📜 <strong>Fact:</strong> '+text;
+  bubble.style.display='block';
+  setTimeout(()=>bubble.style.display='none', 2200);
+}
+
+/* movement along path */
+function animateAlong(el, fromStep, toStep, ms, yOff, onDone){
+  const wrap=wrapEl.getBoundingClientRect(); const L=pathLen();
+  const start=L*(fromStep/(STEPS-1)), end=L*(toStep/(STEPS-1)); let t0=null;
+  function frame(t){
+    if(!t0) t0=t;
+    const p=Math.min((t-t0)/ms,1);
+    const len=start+(end-start)*p; const pt=pathEl.getPointAtLength(len);
+    const x=(pt.x/1200)*wrap.width-32, y=(pt.y/675)*wrap.height-yOff;
+    el.style.transform=`translate(${x}px,${y}px)`;
+    if(p<1) requestAnimationFrame(frame); else onDone&&onDone();
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ========== Quiz flow ========== */
+function fillAnswerKey(){
+  answerKey.innerHTML='';
+  order.forEach(q=>{ const li=document.createElement('li'); li.textContent=`${q.q} — ${q.c[q.a]}`; answerKey.appendChild(li); });
+}
+function ask(){
+  audio();
+  stepNum.textContent=iStep+1;
+  const gap=iStep-stormStep;
+  gapEl.textContent = gap>=3 ? "Safe" : gap===2 ? "Getting Close" : gap===1 ? "Close!" : "Danger!";
+  const q=order[iStep];
+  promptEl.textContent=q.q; choicesEl.innerHTML='';
+  shuffle(q.c.map((t,idx)=>({t,idx}))).forEach(({t,idx})=>{
+    const b=document.createElement('button'); b.className='choice'; b.textContent=t;
+    b.onclick=()=>check(idx,b,q); choicesEl.appendChild(b);
+  });
+  nextBtn.classList.add('hidden');
+}
+function check(sel, btn, q){
+  const ok=sel===q.a;
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  if(ok){
+    btn.classList.add('correct'); score++; chime();
+    // run forward
+    mummy.classList.add('runBounce','runArms'); step(); puffAt(mummy);
+    animateAlong(mummy, iStep, iStep+1, MOVE_MS, 60, ()=>{
+      mummy.classList.remove('runBounce','runArms');
+      colorStones(); iStep++; updateProgress();
+      showBubble(q.f || "Great dash!");
+      if(iStep>=STEPS){ return win(); }
+      stepNum.textContent=iStep+1; ask(); // auto-advance to next question
+    });
+  }else{
+    btn.classList.add('wrong'); thud();
+    // storm moves
+    const target=Math.min(STEPS-1, stormStep+1);
+    animateAlong(storm, stormStep, target, STORM_MS, 48, ()=>{
+      stormStep=target; colorStones();
+      if(stormStep>=iStep){ lose(); } else { nextBtn.classList.remove('hidden'); }
+    });
+  }
+}
+nextBtn.onclick=()=>{ ask(); };
+
+/* ========== Endings ========== */
+function win(){
+  chime(); setTimeout(chime,140);
+  const g=document.createElement('div'); g.className='glow';
+  const r=mummy.getBoundingClientRect(); g.style.left=(r.left+r.width/2-45)+'px'; g.style.top=(r.top+r.height/2-45)+'px';
+  document.body.appendChild(g); setTimeout(()=>g.remove(),1400);
+  document.getElementById('quizCard').classList.add('hidden'); endView.classList.remove('hidden');
+  endTitle.textContent="You reached the Sun Gate! ✨";
+  endMsg.textContent=`Score: ${score}/${STEPS}. The afterlife breeze greets our speedy mummy.`;
+}
+function lose(){
+  document.getElementById('quizCard').classList.add('hidden'); endView.classList.remove('hidden');
+  endTitle.textContent="The Sandstorm Caught Up! 🌪️";
+  endMsg.textContent="Try again—read the clues and outrun the storm!";
+}
+
+/* ========== Start ========== */
+function start(){
+  order=shuffle([...BANK]).slice(0,STEPS); iStep=0; stormStep=-2; score=0;
+  document.getElementById('quizCard').classList.remove('hidden'); endView.classList.add('hidden');
+  drawStones(); colorStones(); updateProgress();
+  placeToken(mummy,0,60); placeToken(storm,Math.max(-2,0),48);
+  fillAnswerKey(); ask();
+}
+document.body.addEventListener('click', audio, {once:true});
+window.addEventListener('resize', ()=>{ placeToken(mummy,iStep,60); placeToken(storm,stormStep,48); updateProgress(); });
+setTimeout(start,60);
+</script>
+</body>
+</html>
